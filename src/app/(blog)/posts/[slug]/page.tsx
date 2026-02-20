@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -14,14 +15,28 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const result = await getPost(slug)
-  if (!result.success || result.data.status !== 'published') return {}
+  if (!result.success || result.data.status !== 'published') {
+    return { title: 'Post Not Found' }
+  }
+  
   const post = result.data
+  const description = post.excerpt ?? post.content.slice(0, 160)
+
   return {
     title: post.title,
-    description: post.excerpt ?? post.content.slice(0, 160),
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: 'article',
+      publishedTime: post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
+      modifiedTime: new Date(post.updatedAt).toISOString(),
+      authors: [post.author.name ?? post.author.email],
+      images: post.coverImageUrl ? [{ url: post.coverImageUrl }] : [],
+    },
   }
 }
 
@@ -41,6 +56,18 @@ export default async function PostPage({ params }: PageProps) {
 
   const commentsResult = await getComments(post.id)
   const comments = commentsResult.success ? commentsResult.data : []
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt ?? post.content.slice(0, 160),
+    datePublished: post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
+    dateModified: new Date(post.updatedAt).toISOString(),
+    author: { '@type': 'Person', name: post.author.name ?? post.author.email },
+    image: post.coverImageUrl ?? undefined,
+    url: `${process.env.NEXT_PUBLIC_BASE_URL ?? 'https://chakyiu.blog'}/posts/${post.slug}`,
+  }
 
   return (
     <article className="container max-w-4xl py-12 mx-auto px-4">
@@ -109,6 +136,8 @@ export default async function PostPage({ params }: PageProps) {
         </div>
         <CommentList comments={comments} postId={post.id} />
       </div>
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </article>
   )
 }

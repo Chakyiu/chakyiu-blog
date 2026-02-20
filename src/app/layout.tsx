@@ -7,8 +7,24 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: { default: "chakyiu blog", template: "%s | chakyiu blog" },
-  description: "An IT developer blog",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? 'https://chakyiu.blog'),
+  title: {
+    default: 'ChaKyiu Blog',
+    template: '%s | ChaKyiu Blog',
+  },
+  description: 'IT developer blog covering web development, DevOps, and software engineering.',
+  openGraph: {
+    type: 'website',
+    siteName: 'ChaKyiu Blog',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

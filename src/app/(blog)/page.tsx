@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { getPosts } from '@/lib/actions/posts'
 import { PostCard } from '@/components/blog/post-card'
 import { Pagination } from '@/components/blog/pagination'
@@ -10,6 +11,11 @@ interface PageProps {
     tag?: string
     q?: string
   }>
+}
+
+export const metadata: Metadata = {
+  title: 'Blog',
+  description: 'Articles on web development, DevOps, and software engineering.',
 }
 
 export default async function BlogPage({ searchParams }: PageProps) {

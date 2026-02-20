@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { searchPosts } from '@/lib/actions/search'
 import { TagBadge } from '@/components/blog/tag-badge'
@@ -6,8 +7,10 @@ interface SearchPageProps {
   searchParams: Promise<{ q?: string }>
 }
 
-export function generateMetadata() {
-  return { title: 'Search Posts' }
+export const metadata: Metadata = {
+  title: 'Search',
+  description: 'Search blog posts.',
+  robots: { index: false, follow: false },
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {

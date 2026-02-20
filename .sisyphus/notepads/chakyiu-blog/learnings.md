@@ -146,3 +146,78 @@
 - Server Components can pass data to Client Components (e.g. `UserNav`) seamlessly.
 - `shadcn/ui` components like `DropdownMenu` require `"use client"` wrapper if used inside Server Components directly with interactivity.
 - `next build` lock file can become stale if previous build crashed; `rm .next/lock` or removing `.next` entirely fixes it.
+
+## Task 21: RSS 2.0 Feed Generation (2026-02-20)
+
+### Implementation Details
+- Created route handler at `src/app/feed.xml/route.ts`
+- GET handler returns valid RSS 2.0 XML with proper Content-Type header
+- Fetches latest 20 published posts sorted by publishedAt DESC
+- Proper XML escaping: `&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;`
+- CDATA wrapper for descriptions to handle content safely
+- RFC 822 date format via `Date.toUTCString()`
+- Direct Drizzle ORM query with leftJoin to get author name
+- Environment variable support: `NEXT_PUBLIC_BASE_URL` with https://chakyiu.blog fallback
+
+### Key Learnings
+- Route handlers can't easily call Server Actions - direct DB queries required
+- RSS 2.0 requires atom:link namespace declaration for self-reference
+- CDATA sections allow raw content without XML escaping
+- Export `runtime = 'nodejs'` required for routes using `bun:sqlite`
+- Template strings with backticks allow multiline XML generation cleanly
+
+### Patterns Used
+- Direct DB query pattern for route handlers: import db, schema; use select().from().leftJoin().where().orderBy().limit()
+- XML generation via template string
+- Error handling with try/catch returning 500 on failure
+
+## Task 20: Admin Dashboard (2026-02-20)
+- Implemented AdminDashboard as a Server Component in src/app/(admin)/admin/page.tsx.
+- Used Promise.all for parallel data fetching with Drizzle ORM to improve performance.
+- Direct DB access in Server Components is efficient and type-safe.
+- Used drizzle-orm count() and eq() for statistical queries.
+- Leveraged shadcn/ui Card and Lucide icons for a clean, GitHub-inspired aesthetic.
+- Verified with tsc and next build.
+
+## Task 23: SEO Basics — Meta Tags, Open Graph, JSON-LD (2026-02-20)
+
+### Implementation Details
+- Updated `src/app/layout.tsx` with comprehensive base metadata:
+  - `metadataBase: new URL(NEXT_PUBLIC_BASE_URL ?? 'https://chakyiu.blog')` for absolute URLs in OG tags
+  - Title template: `'%s | ChaKyiu Blog'` for auto-suffix on child pages
+  - OpenGraph defaults: type='website', siteName, locale='en_US'
+  - Twitter card: 'summary_large_image'
+  - Robots: index=true, follow=true for public indexing
+- Updated `src/app/(blog)/page.tsx`: Added simple metadata export with title and description
+- Updated `src/app/(blog)/search/page.tsx`: Replaced `generateMetadata()` function with exported `metadata` const, added robots: { index: false, follow: false } to prevent indexing search pages
+- Updated `src/app/(blog)/posts/[slug]/page.tsx`:
+  - Enhanced `generateMetadata()` to return full OpenGraph tags: title, description, type='article', publishedTime, modifiedTime, authors, images
+  - Added JSON-LD BlogPosting schema as `<script type="application/ld+json">` in JSX at end of article element
+  - JSON-LD includes: @context, @type, headline, description, datePublished, dateModified, author, image, url
+
+### Key Learnings
+- `generateMetadata()` must be async and return `Promise<Metadata>` when handling dynamic routes with await params
+- OpenGraph `authors` field is an array of strings (author names/emails)
+- OpenGraph `images` field is an array of `{ url: string }` objects
+- JSON-LD must be stringified and injected via `dangerouslySetInnerHTML` to render as plain script tag
+- Search page robots=false prevents duplicate content issues with different query strings
+- Post-not-found case returns `{ title: 'Post Not Found' }` gracefully (no error)
+
+### All Metadata Types Implemented
+- Base site metadata: layout.tsx (title template, OG defaults, robots)
+- Post list page: (blog)/page.tsx
+- Search page: (blog)/search/page.tsx (no-index)
+- Post detail: (blog)/posts/[slug]/page.tsx (full OG + JSON-LD)
+
+### Verification
+- All 4 pages updated with proper Metadata imports and exports
+- No npm packages added
+- No UI/CSS changes
+- JSON-LD compliant with schema.org BlogPosting spec
+
+## Task 19: Admin User Role Management (2026-02-20)
+- Implemented server action pattern with revalidatePath and useTransition for optimistic UI updates.
+- Used shadcn/ui Table, Badge, Button, Avatar components for consistent admin UI.
+- Enforced role change restrictions: admins cannot demote themselves.
+- Added role_changed notification system linked to database triggers (simulated via action).
+- Leveraged Drizzle ORM for type-safe database operations.
