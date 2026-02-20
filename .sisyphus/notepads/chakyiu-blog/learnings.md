@@ -29,3 +29,28 @@
 - `bun -e "fs.unlinkSync()"` is the reliable way to delete files in this environment.
 - After appending FTS5 to migration and wanting to test fresh: delete all 3 db files (test.db, test.db-shm, test.db-wal).
 - Drizzle migrate skips already-applied migrations by hash — must delete db for a fresh run with modified migration.
+
+## [2026-02-20] Task 12: Tag Management System
+- Zod v4 (installed: 4.3.6) uses `.issues` not `.errors` on ZodError — `.error.issues[0]?.message`
+- `requireAdmin()` throws redirect — does NOT return ActionResult. Call `await requireAdmin()` directly at top of admin actions; no need to check return value.
+- `mkdir` bash command fails in this environment — use `bun -e "import { mkdirSync } from 'fs'; mkdirSync('path', { recursive: true })"` or rely on Write tool to create files (it auto-creates parent dirs).
+- Admin page pattern: server page calls `requireAdmin()` + `getTags()`, renders a `'use client'` TagsManager component with `initialTags` prop. Keeps Server Actions on server, interactive state on client.
+- TagBadge needs contrast color calculation (luminance formula) to ensure readable text on any background color.
+- DB migrations must be run before QA scripts that write to DB. Check `drizzle/` folder for migration SQL; run `bun run src/lib/db/migrate.ts`.
+- Build command MUST include `--webpack` flag: `node .../next build --webpack`
+- Route group `(admin)/admin/tags/page.tsx` shows up as `/admin/tags` in the build output.
+
+## [2026-02-20] Task 7: Blog Post CRUD — Server Actions + Admin-Only Guards
+- `getPosts` and `getPost` call `getCurrentUser()` (not `requireAdmin()`) so they work for public users — returns null session gracefully, then shows only published posts.
+- `PostView.createdAt/updatedAt/publishedAt` are `number` (Unix ms), not `Date` — convert DB `Date` objects with `.getTime()`.
+- `PostView.author` is a full `UserView` object (has `id`, `email`, `role`, `createdAt`) — not just `{ name, image }`.
+- `UserView.createdAt` is a `number` (Unix ms) — need to call `.getTime()` on the DB Date.
+- Use a `PostRow` intermediate type when selecting partial columns from joined query, then cast with `row as PostRow` to satisfy TypeScript.
+- For `getPosts` with tag filter: first resolve tag slug → postIds, then use `inArray(schema.posts.id, postIds)` — avoids complex subqueries.
+- `inArray` from drizzle-orm is needed for the tag filter and batch tag fetching patterns.
+- Use `fetchTagsForPosts(postIds): Map<string, TagView[]>` pattern to batch-load tags for multiple posts efficiently.
+- `getPostById` is a private helper (not exported) used internally by `createPost`, `updatePost`, `changePostStatus` to return the full `PostView` after mutations.
+- `updateValues: Record<string, unknown>` trick allows building a partial update object dynamically without TypeScript complaining about partial schema types.
+- QA scripts cannot call Server Actions directly (they use `auth()` which needs Next.js context). Test DB operations directly instead.
+- `changePostStatus`: only set `publishedAt` when transitioning TO `published` AND `publishedAt` was previously null — preserves original publish date on re-publish.
+- `renderedContent = ''` for now — Task 9 will integrate `renderMarkdown()`.

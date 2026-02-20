@@ -1,0 +1,31 @@
+=== Task 12 QA: Tag Management System ===
+Timestamp: 2026-02-20T05:19:49.773Z
+
+--- Test 1: Insert tag directly via DB ---
+PASS: Inserted tag id=3f5b2110-5b64-4316-a2e9-9a6e2459a798 name="qa-test-tag-1771564789773" slug="qa-test-tag-1771564789773"
+
+--- Test 2: Query tags via DB (getTags equivalent) ---
+PASS: Found tag: name="qa-test-tag-1771564789773" slug="qa-test-tag-1771564789773" color="#0075ca"
+
+--- Test 3: Update tag ---
+PASS: Updated tag name="qa-test-tag-1771564789773-updated" color="#e11d48"
+
+--- Test 4: Delete tag ---
+PASS: Tag deleted, no rows found
+
+--- Test 5: Zod validation ---
+PASS: createTagSchema accepts valid input
+PASS: createTagSchema rejects invalid input (2 issues)
+PASS: updateTagSchema accepts valid input
+
+--- Test 6: List all tags (DB count baseline) ---
+PASS: Total tags in DB: 0
+
+=== All tests PASSED ===
+
+Files created:
+  src/lib/validators/tag.ts        - Zod schemas for tag CRUD
+  src/lib/actions/tags.ts          - Server Actions: getTags, getTagBySlug, createTag, updateTag, deleteTag
+  src/components/blog/tag-badge.tsx - Reusable TagBadge component with color + link support
+  src/app/(admin)/admin/tags/page.tsx       - Admin tags server page
+  src/app/(admin)/admin/tags/tags-manager.tsx - Client-side tags CRUD manager

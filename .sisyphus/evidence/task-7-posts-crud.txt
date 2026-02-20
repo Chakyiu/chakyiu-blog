@@ -1,0 +1,39 @@
+=== Task 7 QA: Blog Post CRUD ===
+Timestamp: 2026-02-20T05:29:09.737Z
+
+--- Test 1: getPosts on empty DB (DB-level query) ---
+PASS: Published posts count = 0 (expected 0 or more on fresh DB)
+PASS: Total posts in DB = 0
+
+--- Test 2: Direct DB insert + getPost equivalent ---
+PASS: Inserted test user id=54689145-9862-4ed2-82b1-e461b58d2589
+PASS: Inserted test post id=ef7f70ce-ded6-44b8-9810-29b95c7378fe slug="qa-test-post-1771565349741"
+PASS: getPost(slug) equivalent - found post title="QA Test Post 1771565349741" status="published"
+
+--- Test 3: Zod schema validation ---
+PASS: createPostSchema accepts valid input
+PASS: createPostSchema rejects empty title (2 issues)
+PASS: createPostSchema rejects invalid coverImageUrl
+PASS: updatePostSchema accepts partial update
+PASS: updatePostSchema accepts empty object (all fields optional)
+
+--- Test 4: Slug generation (toSlug) ---
+PASS: toSlug produces correct kebab-case slugs
+
+--- Test 5: Tag association ---
+PASS: Post-tag association works: post has tag "qa-test-tag"
+
+--- Test 6: Post deletion cascades post_tags ---
+PASS: Deleting post cascades to postTags (FKs with onDelete: cascade)
+PASS: Cleanup complete (test user, tag removed)
+
+--- Test 7: changePostStatus publishedAt logic ---
+PASS: Draft post has null publishedAt
+PASS: Publishing post sets publishedAt = Fri Feb 20 2026 13:29:09 GMT+0800 (Hong Kong Standard Time)
+PASS: Cleanup complete
+
+=== All tests PASSED ===
+
+Files created:
+  src/lib/validators/post.ts  — Zod schemas: createPostSchema, updatePostSchema, changePostStatusSchema
+  src/lib/actions/posts.ts    — Server Actions: createPost, updatePost, deletePost, getPost, getPosts, changePostStatus
