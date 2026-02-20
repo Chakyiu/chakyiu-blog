@@ -1,0 +1,18 @@
+Task 2 - FTS5 Verification Evidence
+=====================================
+Date: 2026-02-20
+
+FTS5 Virtual Table: posts_fts (USING fts5 with content=posts, content_rowid=rowid)
+Triggers: posts_fts_insert, posts_fts_update, posts_fts_delete
+
+Test - FTS INSERT trigger:
+  INSERT INTO posts (id, title, ...) VALUES ('test-<ts>', 'TypeScript Guide', ...)
+  SELECT title FROM posts_fts WHERE posts_fts MATCH 'TypeScript'
+  Result: FTS INSERT: PASS 1 results
+
+Test - FTS DELETE trigger:
+  DELETE FROM posts WHERE id='test-<ts>'
+  SELECT title FROM posts_fts WHERE posts_fts MATCH 'TypeScript'
+  Result: FTS DELETE: PASS
+
+Both FTS5 triggers verified working correctly.
