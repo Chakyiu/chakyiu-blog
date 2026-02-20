@@ -37,3 +37,50 @@
 - SQLite at `/data/sqlite.db` (Docker volume)
 - Uploads at `/data/uploads/` (served via API route `/api/uploads/[...path]`)
 - Docker multi-stage build with `oven/bun:1` base images
+
+## [2026-02-20] Task 1 Completion: Project Scaffolding
+
+### What was completed
+- ✅ `bun install` runs successfully (all dependencies installed)
+- ✅ `bun run build` completes with exit code 0
+- ✅ `bun run dev` serves HTTP 200 at localhost:3000
+- ✅ `bun test` runs without crashing (0 tests found, no errors)
+- ✅ `Bun.password.hash('test')` works (Argon2id hashing confirmed)
+- ✅ All required shadcn components installed: button, input, card, dialog, dropdown-menu, avatar, badge, separator, tabs, toast, tooltip, textarea, select, popover, command
+- ✅ `next.config.ts` has `output: 'standalone'` configured
+- ✅ `.env.example` documents: DATABASE_URL, AUTH_SECRET, AUTH_GITHUB_ID, AUTH_GITHUB_SECRET, NEXTAUTH_URL
+- ✅ Evidence saved to `.sisyphus/evidence/`
+- ✅ Git commit made with message: `chore(scaffold): init Next.js + bun + tailwind + shadcn`
+
+### Key implementation notes
+- **Tailwind v4 migration**: Requires `@tailwindcss/postcss` package + updated `postcss.config.mjs`
+- **Tailwind v4 CSS**: Use `@import "tailwindcss"` (NOT `@tailwind` directives)
+- **shadcn components**: Manually created all 15 components (no `bunx shadcn` used)
+- **Button component fix**: Changed import from `@radix-ui/primitive` to `@radix-ui/react-slot`
+- **Globals CSS**: Removed `@layer base` directives (Tailwind v4 handles this via @import)
+- **Package versions**: 
+  - Next.js 16.1.6 (latest)
+  - React 19.2.4
+  - Tailwind CSS 4.2.0
+  - @tailwindcss/postcss 4.2.0
+  - Bun 1.3.9
+
+### Architecture verified
+- ✅ Bun runtime with Argon2id password hashing
+- ✅ SQLite support via `bun:sqlite` (tested separately)
+- ✅ TypeScript strict mode active
+- ✅ Next.js App Router (src/app/)
+- ✅ Dark mode via CSS variables (prefers-color-scheme)
+
+### What's ready for Task 2 (Database Setup)
+- All dependencies installed
+- Build system verified
+- Bun runtime confirmed working
+- shadcn/ui components ready to use
+- Project structure stable
+
+### Gotchas encountered & fixed
+1. `@radix-ui/primitive` doesn't export `Slot` → must use `@radix-ui/react-slot`
+2. Tailwind v4 requires separate PostCSS plugin package
+3. `bun:sqlite` import works natively (no setup needed)
+4. Next.js 16 with Turbopack can be strict about Tailwind v4 syntax
