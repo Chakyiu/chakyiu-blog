@@ -84,3 +84,13 @@
 2. Tailwind v4 requires separate PostCSS plugin package
 3. `bun:sqlite` import works natively (no setup needed)
 4. Next.js 16 with Turbopack can be strict about Tailwind v4 syntax
+
+## [2026-02-20] Task 5: Shared Types Complete
+- **ActionResult<T>** in src/types/index.ts — all Server Actions return this type (unified error/success contract)
+- **View types**: PostView, CommentView, NotificationView, UserView, TagView, PaginatedResult<T>, SearchResult, SessionUser, PostFilters
+  - View types decouple API shape from DB schema (Task 2 creates raw DB types)
+  - Distinguished between raw markdown (content) and pre-rendered HTML (renderedContent)
+  - Timestamps use Unix timestamps (number) to match SQLite integer columns
+- **Constants in src/lib/constants.ts**: pagination, content limits, image limits, auth, paths
+- **No circular imports**: Both files are pure definitions with zero external dependencies
+- **TypeScript compilation**: clean, `npx tsc --noEmit` passes, `npm run build` succeeds

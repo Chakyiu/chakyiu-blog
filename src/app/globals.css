@@ -1,50 +1,108 @@
 @import "tailwindcss";
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 3.6%;
+  /* Base */
+  --background: 0 0% 100%;         /* #ffffff */
+  --foreground: 215 14% 11%;       /* #1f2328 */
+
+  /* Card */
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 3.6%;
+  --card-foreground: 215 14% 11%;
+
+  /* Popover */
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 3.6%;
-  --muted: 0 0% 96.1%;
-  --muted-foreground: 0 0% 45.1%;
-  --accent: 0 0% 9.02%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 89.8%;
-  --input: 0 0% 89.8%;
-  --primary: 0 0% 9.02%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 96.1%;
-  --secondary-foreground: 0 0% 9.02%;
-  --ring: 0 0% 3.6%;
-  --radius: 0.5rem;
+  --popover-foreground: 215 14% 11%;
+
+  /* Muted */
+  --muted: 210 17% 96%;            /* #f6f8fa */
+  --muted-foreground: 215 14% 45%; /* #636e7b */
+
+  /* Primary (GitHub blue) */
+  --primary: 213 100% 31%;         /* #0969da */
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary */
+  --secondary: 210 17% 96%;
+  --secondary-foreground: 215 14% 11%;
+
+  /* Accent */
+  --accent: 210 17% 96%;
+  --accent-foreground: 215 14% 11%;
+
+  /* Destructive (red) */
+  --destructive: 3 86% 45%;        /* #cf222e */
+  --destructive-foreground: 0 0% 100%;
+
+  /* Border/Input/Ring */
+  --border: 210 18% 87%;           /* #d0d7de */
+  --input: 210 18% 87%;
+  --ring: 213 100% 31%;
+
+  /* Radius */
+  --radius: 0.375rem;
+
+  /* Status colors (GitHub-style) */
+  --success: 137 55% 36%;          /* #1a7f37 */
+  --success-foreground: 0 0% 100%;
+  --warning: 32 100% 50%;          /* #9a6700 */
+  --warning-foreground: 0 0% 100%;
+  --danger: 3 86% 45%;
+  --danger-foreground: 0 0% 100%;
+  --info: 213 100% 31%;
+  --info-foreground: 0 0% 100%;
+
+  /* Font variables */
+  --font-sans: var(--font-inter, system-ui, -apple-system, sans-serif);
+  --font-mono: var(--font-jetbrains-mono, 'JetBrains Mono', 'Fira Code', monospace);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: 0 0% 3.6%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.6%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.6%;
-    --popover-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 98%;
-    --accent-foreground: 0 0% 9.02%;
-    --destructive: 0 72.2% 50.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9.02%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --ring: 0 0% 83.3%;
-  }
+.dark {
+  /* Base */
+  --background: 216 28% 7%;        /* #0d1117 */
+  --foreground: 210 17% 90%;       /* #e6edf3 */
+
+  /* Card */
+  --card: 216 19% 12%;             /* #161b22 */
+  --card-foreground: 210 17% 90%;
+
+  /* Popover */
+  --popover: 216 19% 12%;
+  --popover-foreground: 210 17% 90%;
+
+  /* Muted */
+  --muted: 216 14% 18%;            /* #21262d */
+  --muted-foreground: 213 14% 60%; /* #8b949e */
+
+  /* Primary (GitHub blue dark) */
+  --primary: 213 100% 65%;         /* #58a6ff */
+  --primary-foreground: 216 28% 7%;
+
+  /* Secondary */
+  --secondary: 216 14% 18%;
+  --secondary-foreground: 210 17% 90%;
+
+  /* Accent */
+  --accent: 216 14% 18%;
+  --accent-foreground: 210 17% 90%;
+
+  /* Destructive */
+  --destructive: 6 78% 57%;        /* #f85149 */
+  --destructive-foreground: 216 28% 7%;
+
+  /* Border/Input/Ring */
+  --border: 217 14% 24%;           /* #30363d */
+  --input: 217 14% 24%;
+  --ring: 213 100% 65%;
+
+  /* Status colors */
+  --success: 137 77% 50%;          /* #3fb950 */
+  --success-foreground: 216 28% 7%;
+  --warning: 35 100% 51%;          /* #d29922 */
+  --warning-foreground: 216 28% 7%;
+  --danger: 6 78% 57%;
+  --danger-foreground: 216 28% 7%;
+  --info: 213 100% 65%;
+  --info-foreground: 216 28% 7%;
 }
 
 * {
