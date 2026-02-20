@@ -1,0 +1,48 @@
+Task 13: Comment System — Evidence
+===================================
+Date: 2026-02-20
+
+FILES CREATED:
+- src/lib/validators/comment.ts         ✓ Zod schemas: createCommentSchema, createReplySchema
+- src/lib/actions/comments.ts           ✓ Server Actions: getComments, createComment, createReply
+- src/components/blog/comment-form.tsx  ✓ 'use client' form component
+- src/components/blog/comment-list.tsx  ✓ Server Component (no 'use client')
+- src/components/blog/reply-section.tsx ✓ 'use client' wrapper for reply toggle state
+
+FILES MODIFIED:
+- src/app/(blog)/posts/[slug]/page.tsx  ✓ Replaced placeholder with CommentForm + CommentList
+
+VERIFICATION:
+- tsc --noEmit: PASSED (zero errors)
+- bun run build: PASSED
+
+BUILD OUTPUT:
+▲ Next.js 16.1.6 (webpack)
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.7s
+  Running TypeScript ...
+  Collecting page data using 9 workers ...
+✓ Generating static pages using 9 workers (6/6) in 206.0ms
+
+Route (app):
+  ƒ /posts/[slug]   ← includes comment system
+
+REQUIREMENTS MET:
+✓ getComments(postId) is PUBLIC — no auth required
+✓ createComment/createReply call requireAuth()
+✓ One level nesting only: comment → reply
+✓ createReply validates parentId IS NULL (top-level check)
+✓ Returns { success: false, error: "Cannot reply to a reply" } for nested reply attempt
+✓ Notification created on reply (userId = parentComment.authorId, type = 'reply')
+✓ Self-notifications skipped (parentComment.authorId !== user.id)
+✓ renderCommentMarkdown() used for ALL comment content (XSS sanitized)
+✓ Hidden comments render as [removed] in italic muted text
+✓ getComments returns top-level with replies[] nested
+✓ Uses crypto.randomUUID() for IDs
+✓ Zod v4 .issues pattern used
+✓ ActionResult<T> pattern followed throughout
+✓ CommentForm shows "Sign in" link for unauthenticated users
+✓ Reply forms collapsible via ReplySection client component
+✓ Character count shown in CommentForm
+✓ router.refresh() called after successful submit
+✓ Comments section heading shows count: "Comments ({post.commentCount})"

@@ -89,3 +89,45 @@
 - Pagination component required basePath prop, not baseUrl
 - Admin posts list link to public post: `/posts/[slug]` NOT `/blog/[slug]` — bug was fixed
 - `getPostById` was made public export (not just internal) to support the edit page lookup by ID
+
+## [2026-02-20] Task 13: Comment System
+- comment-list.tsx is a Server Component — ReplySection extracted to separate reply-section.tsx as 'use client'
+- Server Components CAN import 'use client' components (they become leaf client boundaries)
+- getComments uses two-pass approach: fetch all comments for postId, then separate top-level vs replies by parentId IS NULL
+- createReply validates parentId row has parentId === null before inserting (prevents reply-to-reply)
+- Notification skipped if parentComment.authorId === user.id (no self-notification)
+- CommentForm uses useSession from next-auth/react to detect auth state client-side
+- `isReply` prop on CommentCard only controls showing/hiding ReplySection (replies have no reply button)
+- `bun run build` uses `next build --webpack` flag per package.json scripts
+- mkdir bash fails in this env — use `bun -e "import { mkdirSync } from 'fs'; ..."` pattern
+- Server Actions with 'server-only' import can be called directly from Server Components (pages)
+- revalidatePath inside createComment/createReply needs the post slug — does an extra DB query to get it
+
+## [2026-02-20] Task 17: Image Upload System
+- `export const runtime = 'nodejs'` REQUIRED on API routes that use Bun.file/Bun.write — without it Next.js tries to use edge runtime which lacks these APIs.
+- `Bun.file(path).exists()` returns Promise<boolean> — must be awaited.
+- Path traversal prevention: use `path.basename(segment)` on each path segment before joining with UPLOADS_DIR.
+- `Bun.file(path).type` returns MIME type of the file — used for Content-Type header in serve route.
+- images table `createdAt` field: use `new Date()` explicitly (not relying on $defaultFn when inserting via drizzle direct insert).
+- Textarea cursor position: capture `selectionStart`/`selectionEnd`, insert markdown at cursor, then use `setSelectionRange` inside `requestAnimationFrame` to restore cursor after React re-render.
+- MarkdownEditor: `activeTab` state controlled via `onValueChange` on Tabs component — allows conditional rendering of toolbar (only on "write" tab).
+- Build command must be invoked as: `node /path/to/node_modules/next/dist/bin/next build --webpack` (using `workdir` param) — the `cd && command` pattern errors in this environment.
+- Both new routes confirmed in build output as `ƒ` (dynamic server-rendered): `/api/upload` and `/api/uploads/[...path]`.
+
+## [2026-02-20] Task 14: Comment Moderation
+- `AdminCommentView = CommentView & { postTitle: string | null; postSlug: string | null }` — define locally in comments.ts as an exported type (not in types/index.ts per task constraints).
+- `getAdminComments` does two leftJoins: comments → users, comments → posts to get author + post title/slug in one query.
+- `hideComment`: `db.update(comments).set({ hidden: true })` + insert `comment_hidden` notification (skip if authorId null).
+- `unhideComment`: `db.update(comments).set({ hidden: false })` — no notification needed.
+- `deleteComment`: delete replies first (`db.delete where parentId = id`), then delete the comment itself. Insert `comment_deleted` notification with `referenceId: null`.
+- Admin comments page follows the same Server Component + 'use client' Manager pattern as tags page.
+- CommentsManager uses `useTransition` for optimistic updates — on delete, also filters out replies (`c.parentId !== id`).
+- `requireAdmin` import added to comments.ts alongside existing `requireAuth`.
+
+## [2026-02-20] Task 18: Full-Text Search
+- FTS5 table `posts_fts` with columns title (idx 0) and content (idx 1), rowid links to posts.rowid
+- snippet() uses column index: snippet(posts_fts, 1, '<mark>', '</mark>', '...', 20)
+- bm25() for relevance: ORDER BY bm25(posts_fts) (lower = more relevant)
+- db.all(sql`...`) returns unknown[] — cast with 'as FtsRow[]'
+- SearchBar uses useSearchParams() so MUST be wrapped in React.Suspense in server components
+- Search page reads searchParams.q and calls searchPosts()

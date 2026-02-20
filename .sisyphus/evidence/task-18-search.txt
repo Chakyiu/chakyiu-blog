@@ -1,0 +1,63 @@
+===== TASK 18: FULL-TEXT SEARCH IMPLEMENTATION =====
+
+STATUS: COMPLETE
+DATE: 2026-02-20
+
+ARTIFACTS CREATED:
+1. src/lib/actions/search.ts - Server action for FTS search
+2. src/components/blog/search-bar.tsx - Search input component
+3. src/app/(blog)/search/page.tsx - Search results page
+4. src/components/layout/header.tsx - UPDATED with SearchBar + Suspense
+
+VERIFICATION RESULTS:
+
+1. TypeScript Type Check:
+   Command: /Users/chakyiu/Documents/github/2026/chakyiu-blog/node_modules/.bin/tsc --noEmit --project /Users/chakyiu/Documents/github/2026/chakyiu-blog/tsconfig.json
+   Result: ✓ PASSED (no errors)
+
+2. Next.js Build:
+   Command: /Users/chakyiu/Documents/github/2026/chakyiu-blog/node_modules/.bin/next build --webpack
+   Result: ✓ PASSED
+   - Compiled successfully in 3.2s
+   - Route /search detected and registered
+   - Build exit code: 0
+
+IMPLEMENTATION DETAILS:
+
+Server Action (search.ts):
+- Uses FTS5 table posts_fts with columns: title (idx 0), content (idx 1)
+- Executes raw SQL with bm25() relevance scoring
+- snippet() generates highlighted excerpts with <mark> tags
+- Joins with authors and tags for rich metadata
+- Returns up to SEARCH_RESULTS_PER_PAGE results
+- Filters for published posts only
+
+Client Component (search-bar.tsx):
+- 'use client' component using useSearchParams()
+- Renders search form that POSTs to /search
+- Integrated into header with React.Suspense wrapper
+- Shows search icon from lucide-react
+
+Search Page (search/page.tsx):
+- Server component reading searchParams.q
+- Calls searchPosts() server action
+- Displays search results with:
+  - Post title (linked to detail page)
+  - Highlighted snippet with context
+  - Author name and publication date
+  - Associated tags with badges
+- Shows helpful messages for empty/no-results states
+
+Header Integration:
+- Imported React and SearchBar
+- Added Suspense boundary with fallback div (h-9 w-64)
+- SearchBar positioned in flex center of header
+- Adjusted layout: flex-1 now on search container, not end container
+- Responsive: hidden on mobile, visible on md and up
+
+TECHNICAL DECISIONS:
+- Using raw SQL for FTS5 because ORM doesn't support full-text search
+- bm25() for ranking (lower score = higher relevance)
+- snippet(posts_fts, 1, ...) uses column index 1 (content column)
+- React.Suspense required because SearchBar uses client-side hooks
+- Search form uses GET method for shareable URLs (q parameter)

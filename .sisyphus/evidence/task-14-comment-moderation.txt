@@ -1,0 +1,31 @@
+Task 14: Comment Moderation — Evidence
+======================================
+Date: 2026-02-20
+
+## Files Modified
+- src/lib/actions/comments.ts — added requireAdmin import, AdminCommentView type, hideComment, unhideComment, deleteComment, getAdminComments
+
+## Files Created
+- src/app/(admin)/admin/comments/page.tsx — server component, calls requireAdmin + getAdminComments, renders CommentsManager
+- src/app/(admin)/admin/comments/comments-manager.tsx — client component with optimistic hide/unhide/delete
+
+## TSC Check
+PASS — zero errors
+
+## Build Output
+▲ Next.js 16.1.6 (webpack)
+✓ Compiled successfully in 2.4s
+✓ Generating static pages (8/8) in 136.1ms
+
+Route (app)
+┌ ƒ /admin/comments    <-- NEW dynamic route confirmed
+...
+
+## Key Patterns Used
+- AdminCommentView = CommentView & { postTitle: string | null; postSlug: string | null }
+- getAdminComments joins comments + users + posts (both leftJoin)
+- hideComment: update hidden=true, insert comment_hidden notification (skip if no authorId)
+- unhideComment: update hidden=false (no notification)
+- deleteComment: delete replies first (parentId=id), then delete comment row, insert comment_deleted notification
+- CommentsManager follows TagsManager pattern: 'use client', useState + useTransition, optimistic updates
+- Admin page pattern: await requireAdmin() then fetch, pass initialComments to CommentsManager

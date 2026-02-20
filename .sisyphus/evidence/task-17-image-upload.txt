@@ -1,0 +1,42 @@
+## Task 17: Image Upload System — Evidence
+
+### TypeScript Check
+Command: /Users/chakyiu/Documents/github/2026/chakyiu-blog/node_modules/.bin/tsc --noEmit --project /Users/chakyiu/Documents/github/2026/chakyiu-blog/tsconfig.json
+Result: PASS (zero errors, zero output)
+
+### Build Output
+Command: node /Users/chakyiu/Documents/github/2026/chakyiu-blog/node_modules/next/dist/bin/next build --webpack
+Result: SUCCESS
+
+▲ Next.js 16.1.6 (webpack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully
+  Running TypeScript ...
+  Collecting page data ...
+✓ Generating static pages (7/7)
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /admin/posts
+├ ƒ /admin/posts/[id]/edit
+├ ƒ /admin/posts/new
+├ ƒ /admin/tags
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/upload              ← NEW: POST handler for image uploads (admin only)
+├ ƒ /api/uploads/[...path]   ← NEW: GET handler to serve uploaded images
+└ ƒ /posts/[slug]
+
+### Files Created / Modified
+- src/app/api/uploads/[...path]/route.ts (NEW)  — serves files from UPLOADS_DIR
+- src/app/api/upload/route.ts (NEW)             — POST handler, admin-only, writes to disk + DB
+- src/components/blog/markdown-editor.tsx (MOD) — added toolbar with Upload Image button
+
+### Key Decisions
+- export const runtime = 'nodejs' on both API routes (required for Bun file ops in Next.js build)
+- Path traversal prevention: basename each segment before joining to UPLOADS_DIR
+- Textarea cursor position preserved after insert via selectionStart/End + setSelectionRange
+- Error displayed inline next to the upload button (no toast dependency needed)
