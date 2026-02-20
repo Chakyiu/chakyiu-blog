@@ -39,7 +39,7 @@ export async function Header() {
          </div>
          
          <div className="flex items-center justify-end gap-2">
-          <NotificationBell />
+           <NotificationBell user={user} />
           
           <ThemeToggle />
           

@@ -1,30 +1,29 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getUnreadCount } from '@/lib/actions/notifications'
+import type { SessionUser } from '@/types'
 
-export function NotificationBell() {
-  const { data: session } = useSession()
+export function NotificationBell({ user }: { user: SessionUser | null }) {
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
-    if (!session?.user) return
+    if (!user) return
 
     getUnreadCount().then((result) => {
       if (result.success) {
         setUnreadCount(result.data)
       }
     })
-  }, [session])
+  }, [user])
 
-  if (!session?.user || unreadCount === 0) {
-    if (!session?.user) return null
+  if (!user) return null
 
+  if (unreadCount === 0) {
     return (
       <Button variant="ghost" size="icon" className="relative hidden md:flex" aria-label="Notifications" asChild>
         <Link href="/notifications">

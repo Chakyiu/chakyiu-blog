@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "node .next/standalone/server.js",
     "migrate": "bun run src/lib/db/migrate.ts",

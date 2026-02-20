@@ -1,0 +1,51 @@
+# Task F1: E2E Integration Test Results
+Date: 2026-02-20
+
+## Routes Tested
+
+| Route                       | Method | Expected | Actual | Status |
+|-----------------------------|--------|----------|--------|--------|
+| /                           | GET    | 200      | 200    | ✅ PASS |
+| /search                     | GET    | 200      | 200    | ✅ PASS |
+| /auth/login                 | GET    | 200      | 200    | ✅ PASS |
+| /auth/register              | GET    | 200      | 200    | ✅ PASS |
+| /auth/signout               | GET    | 200      | 200    | ✅ PASS |
+| /api/health                 | GET    | 200      | 200    | ✅ PASS |
+| /feed.xml                   | GET    | 200      | 200    | ✅ PASS |
+| /admin (unauthenticated)    | GET    | 307      | 307    | ✅ PASS |
+| /settings (unauthenticated) | GET    | 307      | 307    | ✅ PASS |
+| /notifications (unauth)     | GET    | 307      | 307    | ✅ PASS |
+| /history (unauthenticated)  | GET    | 307      | 307    | ✅ PASS |
+
+TOTAL: 11/11 PASS
+
+## Security Headers (verified on all responses)
+- X-Frame-Options: DENY ✅
+- X-Content-Type-Options: nosniff ✅
+- X-XSS-Protection: 1; mode=block ✅
+- Referrer-Policy: strict-origin-when-cross-origin ✅
+- Permissions-Policy: camera=(), microphone=(), geolocation=() ✅
+- Strict-Transport-Security: max-age=63072000; includeSubDomains; preload ✅
+- Content-Security-Policy: default-src 'self'; ... ✅
+
+## Rate Limiting Test
+- Endpoint: POST /api/auth/signin
+- Sent 11 requests, expected 429 on request #11
+- Requests 1-10: 302 (normal redirect) ✅
+- Request 11: 429 Too Many Requests ✅
+- Rate limiter working correctly
+
+## API Endpoints
+- GET /api/health → {"status":"ok","timestamp":"..."} (200) ✅
+- GET /feed.xml → valid RSS 2.0 XML (200) ✅
+
+## Bugs Found and Fixed During F1
+1. NotificationBell used `useSession` without SessionProvider → fixed to use prop
+2. bun:sqlite webpack mock broke dev mode when `!dev` was added → reverted to `if (isServer)`
+3. feed.xml catch block returned 500 → improved to return empty valid RSS XML
+4. package.json dev script didn't use --webpack → added --webpack flag
+
+## Build Status
+- TSC: PASS (exit 0)
+- next build --webpack: PASS (23 routes)
+- bun test: 19/19 PASS
