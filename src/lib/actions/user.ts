@@ -5,6 +5,7 @@ import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
 import { eq, desc } from 'drizzle-orm'
 import { requireAuth } from '@/lib/auth/helpers'
+import { revalidatePath } from 'next/cache'
 import type { ActionResult, CommentView, UserView } from '@/types'
 
 // ── UserCommentView ──────────────────────────────────────────────────────────
@@ -103,5 +104,55 @@ export async function getUserComments(): Promise<ActionResult<UserCommentView[]>
     return { success: true, data: views }
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Failed to fetch user comments' }
+  }
+}
+
+export async function updateProfile(name: string, image: string): Promise<ActionResult<UserView>> {
+  const user = await requireAuth()
+
+  const cleanName = name?.trim()
+  const cleanImage = image?.trim() || null
+
+  if (!cleanName) {
+    return { success: false, error: 'Name is required' }
+  }
+
+  if (cleanName.length > 50) {
+    return { success: false, error: 'Name must be 50 characters or less' }
+  }
+
+  if (cleanImage && cleanImage.length > 500) {
+    return { success: false, error: 'Image URL is too long' }
+  }
+
+  try {
+    await db
+      .update(schema.users)
+      .set({
+        name: cleanName,
+        image: cleanImage,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.users.id, user.id))
+
+    revalidatePath('/settings')
+    revalidatePath('/', 'layout')
+
+    return {
+      success: true,
+      data: {
+        id: user.id,
+        name: cleanName,
+        email: user.email,
+        image: cleanImage,
+        role: user.role,
+        createdAt: 0,
+      },
+    }
+  } catch (err) {
+    return {
+      success: false,
+      error: 'Failed to update profile. Please try again.',
+    }
   }
 }

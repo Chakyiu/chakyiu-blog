@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.data
+data
+*.db
+*.db-shm
+*.db-wal
+.env.local
+.env
+.sisyphus

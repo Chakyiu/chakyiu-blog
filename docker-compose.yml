@@ -1,0 +1,16 @@
+services:
+  blog:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - blog_data:/data
+    environment:
+      - DATABASE_URL=/data/blog.db
+      - NODE_ENV=production
+    env_file:
+      - path: .env.local
+        required: false
+
+volumes:
+  blog_data:

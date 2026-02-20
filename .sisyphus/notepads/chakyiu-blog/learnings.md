@@ -227,3 +227,85 @@
 - Handled Next.js 15 searchParams promise in error page server component.
 - Used next-auth/react for client-side signIn/signOut and next-auth for server-side auth.
 - Validated form inputs and handled server action responses.
+
+- Health check endpoints follow standard pattern: `export const runtime = 'nodejs'` + simple GET handler returning JSON with status & timestamp.
+
+## Task 24: Dark/Light/System Theme Toggle (2026-02-20)
+- **ThemeToggle component**: Created at `src/components/theme-toggle.tsx` as `'use client'` with proper hydration handling
+- **Hydration pattern**: Use `useState(false)` + `useEffect(() => setMounted(true))` to avoid hydration mismatch with custom theme provider
+- **Placeholder strategy**: Return `<div className="h-10 w-10" />` during SSR to maintain layout and prevent shift when hydration completes
+- **Theme cycling**: light → dark → system → light (3-state cycle with Monitor icon for system mode)
+- **Icon usage**: Sun (light), Moon (dark), Monitor (system) from lucide-react `h-[1.2rem] w-[1.2rem]`
+- **Header integration**: ThemeToggle already imported and placed in header at line 44, next to NotificationBell and UserNav
+- **Button variant**: `variant="ghost"` size="icon"` provides clean minimal look matching header aesthetic
+- **Theme provider**: Custom context-based provider (not next-themes), located at `src/components/theme-provider.tsx`
+- **Root layout**: ThemeProvider wraps entire app at `src/app/layout.tsx` with `suppressHydrationWarning` on html element
+- **localStorage**: Theme preference persisted and restored by the provider on mount
+- **Accessibility**: `aria-label`, `title`, and `sr-only` span for screen reader users
+
+
+## User Settings Implementation
+- Implemented user settings page at /settings using a client form component and server action.
+- Used revalidatePath to refresh session data across the app after profile updates.
+- Validated user input (name length, image URL length) in server action.
+- Leveraged shadcn/ui components (Card, Input, Button, Toast) for consistent UI.
+
+## Task: Docker Deployment Configuration (2026-02-20)
+
+### Files Created
+- `Dockerfile` — multi-stage: deps (oven/bun:1-alpine) → builder → runner
+- `docker-compose.yml` — blog service with named volume `blog_data` at `/data`
+- `.dockerignore` — excludes node_modules, .next, .git, .data, data, *.db files, .env files, .sisyphus
+- `scripts/entrypoint.sh` — runs `bun run migrate` then `exec node .next/standalone/server.js`
+
+### Key Decisions
+- `output: "standalone"` was ALREADY set in `next.config.ts` — no changes needed there
+- `"start"` script changed from `"next start"` to `"node .next/standalone/server.js"` to use standalone output
+- `"migrate"` script added: `"bun run src/lib/db/migrate.ts"` (must use bun, NOT node — migrate.ts uses bun:sqlite natively)
+- Runner stage uses `oven/bun:1-alpine` (not node:alpine) because migrate.ts requires Bun runtime for `bun:sqlite`
+- `entrypoint.sh` uses `exec node ...` for server.js (Node.js standalone), but `bun run migrate` for migrations
+
+### Critical: bun:sqlite in Runner
+- `src/lib/db/migrate.ts` imports `bun:sqlite` directly — requires Bun runtime at container runtime
+- Cannot use `node:20-alpine` for the runner stage (bun:sqlite not available in plain Node)
+- Must use `oven/bun:1-alpine` so `bun run migrate` works at startup
+
+### docker-compose env_file
+- Uses `required: false` on `.env.local` — container starts even if file doesn't exist
+- `DATABASE_URL=/data/blog.db` overrides `.env.local` value pointing to the named volume
+
+### build verification
+- TSC check: clean (0 errors)
+- `next build --webpack`: builds successfully (20 static pages, all routes)
+
+## Task: Bun Unit Tests for Core DB Layer (2026-02-20)
+
+### Test Pattern
+- Each test file creates its own `:memory:` SQLite DB — never touches production `./data/blog.db`
+- Pattern: `const sqlite = new Database(':memory:')` + `drizzle(sqlite, { schema })` + `migrate(db, { migrationsFolder })`
+- Migration path resolved via `path.resolve(import.meta.dir, '../../drizzle')` — relative to test file location
+- `import.meta.dir` works in Bun test files (equivalent of `__dirname`)
+- `sqlite.exec('PRAGMA foreign_keys = ON;')` required before migration to enforce FK constraints in tests
+
+### Server Action Limitation
+- Server Actions use `'use server'` + `auth()`/`requireAdmin()` which need Next.js request context — cannot call them directly in Bun tests
+- Solution: test the DB layer directly — insert/select/update rows using drizzle on the in-memory DB
+- For `registerUser`: re-implement the same logic locally in auth.test.ts using the test DB instance (avoids the singleton import)
+
+### registerUser Test Strategy
+- `registerUser` in `src/lib/auth/register.ts` imports `db` from the singleton — cannot inject test DB
+- Re-implemented the exact same function locally in auth.test.ts using `sqlite.transaction()` + `db` (test instance)
+- Tests: happy path, duplicate email rejection, invalid email format, weak password (too short), missing uppercase
+
+### FTS5 Search Tests
+- Migration runs `CREATE VIRTUAL TABLE posts_fts USING fts5(...)` and the 3 triggers
+- After migration, INSERT triggers populate `posts_fts` automatically
+- Use `sqlite.prepare<T, [string]>(sql).all(param)` for raw FTS5 MATCH queries — avoids drizzle template syntax complexity
+- FTS5 `MATCH 'keyword'` is case-insensitive by default
+
+### FK Constraint Test
+- `comments.postId` references `posts.id` — inserting a comment with a fake postId throws due to `PRAGMA foreign_keys = ON`
+
+### Build/Test Commands
+- `bun test src/tests/` — runs all 4 test files (19 tests, 0 failures)
+- `node_modules/.bin/tsc --noEmit --project tsconfig.json` — clean (0 errors)
