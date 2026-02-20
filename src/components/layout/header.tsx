@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Bell, Code2 } from "lucide-react";
 import { MobileNav } from "./mobile-nav";
+import React from 'react'
+import { SearchBar } from '@/components/blog/search-bar'
 
 export function Header() {
   return (
@@ -23,9 +25,15 @@ export function Header() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/search">Search</Link>
           </Button>
-        </nav>
-        
-        <div className="flex flex-1 items-center justify-end gap-2">
+         </nav>
+         
+         <div className="hidden md:flex flex-1 mx-4">
+           <React.Suspense fallback={<div className="h-9 w-64" />}>
+             <SearchBar />
+           </React.Suspense>
+         </div>
+         
+         <div className="flex items-center justify-end gap-2">
           <Button variant="ghost" size="icon" className="relative hidden md:flex" aria-label="Notifications">
             <Bell className="h-4 w-4" />
           </Button>

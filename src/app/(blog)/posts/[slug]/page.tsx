@@ -2,8 +2,11 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getPost } from '@/lib/actions/posts'
+import { getComments } from '@/lib/actions/comments'
 import { TagBadge } from '@/components/blog/tag-badge'
 import { MarkdownContent } from '@/components/markdown-content'
+import { CommentList } from '@/components/blog/comment-list'
+import { CommentForm } from '@/components/blog/comment-form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 
@@ -35,6 +38,9 @@ export default async function PostPage({ params }: PageProps) {
   if (post.status !== 'published') {
     notFound()
   }
+
+  const commentsResult = await getComments(post.id)
+  const comments = commentsResult.success ? commentsResult.data : []
 
   return (
     <article className="container max-w-4xl py-12 mx-auto px-4">
@@ -95,8 +101,13 @@ export default async function PostPage({ params }: PageProps) {
       <Separator className="my-12" />
 
       <div>
-        <h2 className="text-2xl font-bold tracking-tight mb-4">Comments</h2>
-        <p className="text-muted-foreground">Comments are coming soon...</p>
+        <h2 className="text-2xl font-bold tracking-tight mb-6">
+          Comments ({post.commentCount})
+        </h2>
+        <div className="mb-8">
+          <CommentForm postId={post.id} />
+        </div>
+        <CommentList comments={comments} postId={post.id} />
       </div>
     </article>
   )
