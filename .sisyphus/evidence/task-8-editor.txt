@@ -1,0 +1,9 @@
+Task 8: Markdown Editor + Admin Post Pages completed.
+Build successful.
+Admin pages created:
+- /admin/posts
+- /admin/posts/new
+- /admin/posts/[id]/edit
+Markdown editor component implemented with server action preview.
+Post form handles creation and updates.
+Toaster and Label components added.

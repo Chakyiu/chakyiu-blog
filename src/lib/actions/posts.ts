@@ -538,7 +538,7 @@ export async function changePostStatus(
 
 // ── getPostById (internal helper) ─────────────────────────────────────────────
 
-async function getPostById(postId: string): Promise<ActionResult<PostView>> {
+export async function getPostById(postId: string): Promise<ActionResult<PostView>> {
   try {
     const rows = await db
       .select({

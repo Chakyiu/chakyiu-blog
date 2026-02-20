@@ -67,8 +67,25 @@
 
 ## [2026-02-20] Task 10: Post List Page
 - searchParams in Next.js 16 App Router must be awaited: `const { page, tag } = await searchParams`
-- PostCard uses rawContent.slice(0, 160) as excerpt — no separate excerpt field in PostView
+- PostCard uses post.excerpt (string | null) falling back to post.content.slice(0, 160)
 - Pagination uses Link href building: preserve existing searchParams, override `page`
 - Empty state shows friendly message when no posts match the filter
 - getPosts called directly from Server Component (Server Actions work in both forms and Server Components)
 - `ActionResult` type narrowing: check `.success` before accessing `.data`.
+
+## [2026-02-20] Task 11: Post Detail Page
+- `params` in dynamic routes must be awaited: `const { slug } = await params`
+- Non-published posts → `notFound()` to prevent leaking draft content
+- `generateMetadata` receives same props as page — must also await params
+- `post.renderedContent` is pre-rendered HTML — pass directly to MarkdownContent, never re-render
+- Comments section is a placeholder heading only (Task 13+ implements actual comments)
+
+## [2026-02-20] Task 8: Markdown Editor + Admin Post Pages
+- MarkdownEditor preview uses renderMarkdownAction (server action) to avoid importing server-only module in client
+- PostForm is a 'use client' component that calls createPost/updatePost server actions directly
+- Admin post edit page uses [id] and exported getPostById helper
+- renderMarkdownAction wrapper pattern: thin server action that calls renderMarkdown()
+- Added Toaster, Label, Table, UseToast components for full functionality
+- Pagination component required basePath prop, not baseUrl
+- Admin posts list link to public post: `/posts/[slug]` NOT `/blog/[slug]` — bug was fixed
+- `getPostById` was made public export (not just internal) to support the edit page lookup by ID
