@@ -1,0 +1,36 @@
+Task 3 - Auth.js v5 QA Evidence
+=================================
+
+## Build Test
+Command: next build --webpack
+Exit: 0 (SUCCESS)
+
+Output:
+✓ Compiled successfully
+✓ Running TypeScript - 0 errors
+✓ Collecting page data using 9 workers in 289.9ms
+✓ Generating static pages using 9 workers (3/3) in 326.5ms
+✓ Collecting build traces in 7.8s
+✓ Finalizing page optimization in 8.0s
+
+Routes:
+  ○ /
+  ○ /_not-found
+  ƒ /api/auth/[...nextauth]
+  ƒ Proxy (Middleware)
+
+## Registration Test
+Command: DATABASE_URL=/tmp/auth-test.db bun -e registerUser(...)
+
+Results:
+First user:  {"success":true,"data":{"id":"3d257430-...","role":"admin"}}   ✓
+Second user: {"success":true,"data":{"id":"7bb79cfe-...","role":"user"}}    ✓
+Duplicate:   {"success":false,"error":"Email already registered"}              ✓
+
+## Fix Summary
+Root cause: Next.js 16 bundles bun:sqlite as a string external in webpack config.
+Fix: In next.config.ts webpack callback, prepend { "bun:sqlite": "commonjs /abs/path/bun-sqlite-mock.cjs" }
+     to config.externals (BEFORE the existing externals), filtering out the string version.
+     The mock .cjs file uses CommonJS (module.exports) to work with require().
+     Also added: export const runtime = 'nodejs' to the auth route to skip edge compilation.
+     Build flag: next build --webpack (forces webpack mode, required due to webpack config present).
