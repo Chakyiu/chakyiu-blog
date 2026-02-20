@@ -1,12 +1,17 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Bell, Code2 } from "lucide-react";
+import { Code2 } from "lucide-react";
 import { MobileNav } from "./mobile-nav";
 import React from 'react'
 import { SearchBar } from '@/components/blog/search-bar'
+import { NotificationBell } from './notification-bell'
+import { getCurrentUser } from '@/lib/auth/helpers'
+import { UserNav } from './user-nav'
 
-export function Header() {
+export async function Header() {
+  const user = await getCurrentUser()
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-14 max-w-screen-xl items-center px-4">
@@ -34,15 +39,17 @@ export function Header() {
          </div>
          
          <div className="flex items-center justify-end gap-2">
-          <Button variant="ghost" size="icon" className="relative hidden md:flex" aria-label="Notifications">
-            <Bell className="h-4 w-4" />
-          </Button>
+          <NotificationBell />
           
           <ThemeToggle />
           
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/auth/login">Sign In</Link>
-          </Button>
+          {user ? (
+            <UserNav user={user} />
+          ) : (
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/auth/login">Sign In</Link>
+            </Button>
+          )}
           
           <div className="" id="mobile-nav-container">
             <MobileNav />
