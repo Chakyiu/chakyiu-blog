@@ -1,0 +1,16 @@
+TASK 15: Notification System
+TSC: PASS
+BUILD: PASS
+Files created:
+  - src/lib/actions/notifications.ts (getNotifications, getUnreadCount, markRead, markAllRead)
+  - src/components/layout/notification-bell.tsx ('use client', useSession, unread badge, links to /notifications)
+  - src/app/(blog)/notifications/page.tsx (server component, requireAuth, lists all notifications)
+  - src/app/(blog)/notifications/mark-read-buttons.tsx (client buttons for markRead/markAllRead with router.refresh())
+Files modified:
+  - src/components/layout/header.tsx (replaced static Bell button with <NotificationBell />)
+Notes:
+  - NotificationBell renders nothing if user is not logged in; renders bell with no badge if 0 unread; renders bell+red badge with count if unread > 0
+  - Notifications page shows icon+label per type (reply=MessageSquareReply, comment_hidden=EyeOff, comment_deleted=Trash2, role_changed=UserCog)
+  - formatRelativeDate implemented inline (no external library needed)
+  - markAllRead/markRead both call revalidatePath('/notifications') server-side AND router.refresh() client-side
+  - Build had a transient webpack cache issue on first run; cleared on second run - both TSC and build pass cleanly

@@ -131,3 +131,18 @@
 - db.all(sql`...`) returns unknown[] — cast with 'as FtsRow[]'
 - SearchBar uses useSearchParams() so MUST be wrapped in React.Suspense in server components
 - Search page reads searchParams.q and calls searchPosts()
+
+## Task 15: Notification System (2026-02-20)
+
+- **`NotificationBell` as `'use client'`**: Uses `useSession()` from `next-auth/react` to detect auth state, then calls `getUnreadCount()` on mount. Returns `null` (renders nothing) when not logged in.
+- **Server action in client component**: `getUnreadCount()` called directly in `useEffect` — works because server actions can be called from client components.
+- **Notifications page pattern**: Server Component calls `requireAuth()` (throws redirect if not logged in), then `getNotifications()`. Client-side mark-read buttons in separate `'use client'` file using `useTransition` + `router.refresh()`.
+- **Webpack cache transience**: Build can fail with `Cannot destructure property 'data'` on first run after adding new `'use server'` files; clearing `.next` cache or re-running resolves it. Second run passes cleanly.
+- **`git stash` vs `git stash --include-untracked`**: Default `git stash` does NOT stash untracked files. Use `--include-untracked` for a clean baseline test.
+- **Badge for unread count**: shadcn/ui `Badge` with `variant="destructive"` for red notification count. Used `absolute -top-1 -right-1` positioning on `relative` parent button.
+- **Relative date without library**: Simple `Date.now() - ms` calculation with seconds/minutes/hours/days thresholds — no `date-fns` or similar needed.
+
+## Task 16: User Comment History
+- Server Components can pass data to Client Components (e.g. `UserNav`) seamlessly.
+- `shadcn/ui` components like `DropdownMenu` require `"use client"` wrapper if used inside Server Components directly with interactivity.
+- `next build` lock file can become stale if previous build crashed; `rm .next/lock` or removing `.next` entirely fixes it.

@@ -1,0 +1,15 @@
+TASK 16: User Comment History
+TSC: PASS
+BUILD: PASS
+Files created:
+- src/lib/actions/user.ts
+- src/app/(blog)/history/page.tsx
+- src/components/layout/user-nav.tsx
+Files modified:
+- src/components/layout/header.tsx
+Notes:
+- Implemented `getUserComments` server action in `src/lib/actions/user.ts`.
+- Created `/history` page with `CommentView` display using Tailwind and shadcn/ui.
+- Created `UserNav` client component for user menu.
+- Updated `Header` to be async and fetch user session to conditionally show `UserNav` or "Sign In".
+- Verified with TSC and Build.
