@@ -1,0 +1,9 @@
+Running markdown pipeline tests...
+
+  PASS  Test 1: renderMarkdown produces h1 and pre for code block
+  PASS  Test 2: renderCommentMarkdown strips <script> tags
+  PASS  Test 3: renderCommentMarkdown strips onerror attributes
+  PASS  Test 4: renderCommentMarkdown strips javascript: URLs
+  PASS  Test 5: renderCommentMarkdown renders bold and inline code
+
+Results: 5/5 passed

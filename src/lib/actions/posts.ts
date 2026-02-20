@@ -1,6 +1,7 @@
 'use server'
 
 import { requireAdmin, getCurrentUser } from '@/lib/auth/helpers'
+import { renderMarkdown } from '@/lib/markdown/render'
 import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
 import { createPostSchema, updatePostSchema } from '@/lib/validators/post'
@@ -313,7 +314,7 @@ export async function createPost(input: CreatePostInput): Promise<ActionResult<P
       title,
       slug,
       content,
-      renderedContent: '',
+      renderedContent: await renderMarkdown(content),
       excerpt: excerpt ?? null,
       coverImageUrl: coverImageUrl ?? null,
       authorId: adminUser.id,
@@ -414,7 +415,7 @@ export async function updatePost(
     if (title !== undefined) updateValues.title = title
     if (content !== undefined) {
       updateValues.content = content
-      updateValues.renderedContent = ''
+      updateValues.renderedContent = await renderMarkdown(content)
     }
     if (excerpt !== undefined) updateValues.excerpt = excerpt
     if (coverImageUrl !== undefined) updateValues.coverImageUrl = coverImageUrl

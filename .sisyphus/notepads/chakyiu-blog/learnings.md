@@ -54,3 +54,21 @@
 - QA scripts cannot call Server Actions directly (they use `auth()` which needs Next.js context). Test DB operations directly instead.
 - `changePostStatus`: only set `publishedAt` when transitioning TO `published` AND `publishedAt` was previously null — preserves original publish date on re-publish.
 - `renderedContent = ''` for now — Task 9 will integrate `renderMarkdown()`.
+
+## [2026-02-20] Task 9: Markdown Pipeline
+- rehype-sanitize MUST run AFTER rehype-shiki (not before) — order is critical
+- render.ts is for blog posts (no sanitize — author-trusted content)
+- render-comment.ts is for user comments (with sanitize — untrusted content)
+- commentSanitizeSchema extends defaultSchema to allow Shiki's className/style attributes
+- MarkdownContent is a Server Component — never add 'use client'
+- Import 'server-only' prevents accidental client-side usage
+- After Task 9, posts.ts createPost/updatePost call renderMarkdown(content) for renderedContent
+- QA scripts that import 'server-only' modules must use `bun --conditions react-server` — this maps server-only to empty.js (no-op) via its exports field
+
+## [2026-02-20] Task 10: Post List Page
+- searchParams in Next.js 16 App Router must be awaited: `const { page, tag } = await searchParams`
+- PostCard uses rawContent.slice(0, 160) as excerpt — no separate excerpt field in PostView
+- Pagination uses Link href building: preserve existing searchParams, override `page`
+- Empty state shows friendly message when no posts match the filter
+- getPosts called directly from Server Component (Server Actions work in both forms and Server Components)
+- `ActionResult` type narrowing: check `.success` before accessing `.data`.
