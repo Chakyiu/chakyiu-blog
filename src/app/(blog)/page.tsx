@@ -5,6 +5,8 @@ import { Pagination } from '@/components/blog/pagination'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
+export const revalidate = 60
+
 interface PageProps {
   searchParams: Promise<{
     page?: string

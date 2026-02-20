@@ -11,6 +11,8 @@ import { CommentForm } from '@/components/blog/comment-form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 
+export const revalidate = 60
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }

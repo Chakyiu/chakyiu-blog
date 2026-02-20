@@ -309,3 +309,56 @@
 ### Build/Test Commands
 - `bun test src/tests/` — runs all 4 test files (19 tests, 0 failures)
 - `node_modules/.bin/tsc --noEmit --project tsconfig.json` — clean (0 errors)
+
+### README Documentation (Feb 20 2026)
+- Documented comprehensive feature list including FTS5 search, Auth.js v5, and role-based access.
+- Standardized environment variables across local and Docker environments.
+- Verified TypeScript compatibility after documentation updates.
+- Adopted human-centric writing style per category context rules.
+
+## Production Hardening: Security Headers + Rate Limiting (2026-02-20)
+
+### Next.js 16 uses `proxy.ts` not `middleware.ts`
+- Next.js 16 introduces `src/proxy.ts` as the middleware file (replaces `src/middleware.ts`)
+- If both exist, build fails: "Both middleware file and proxy file are detected. Please use proxy.ts only."
+- Build output shows `ƒ Proxy (Middleware)` confirming proxy.ts is active
+
+### Auth.js v5 middleware wrapping pattern
+- `auth` from `@/auth` is a function that accepts a callback `(req) => Response | void`
+- Wrapping pattern: `export default auth((req) => { ... return NextResponse.next() })`
+- The wrapped callback receives `req` typed as `NextRequest & { auth: unknown }`
+- Must still call `NextResponse.next()` and return it; auth handles session internally
+
+### In-memory rate limiting in Next.js middleware
+- Module-scope `Map<string, { count: number; resetAt: number }>` works for sliding-window rate limiting
+- Key = `${ip}:${pathname}` to isolate per-endpoint
+- `setInterval` for store cleanup works in Next.js server context (Node.js runtime)
+- Get client IP: `req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? req.ip ?? '127.0.0.1'`
+- Return 429 with `Retry-After: 60` header for blocked requests
+
+### Security headers applied via NextResponse
+- `response.headers.set(header, value)` on the `NextResponse.next()` response object
+- CSP needs `unsafe-inline` and `unsafe-eval` for Next.js client-side hydration
+- HSTS `max-age=63072000` = 2 years, standard recommendation
+
+## Performance Optimizations: HTTP Caching + ISR (2026-02-20)
+
+### Files changed
+- `src/app/feed.xml/route.ts` — upgraded Cache-Control from `public, max-age=3600` to `public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400`
+- `src/app/api/health/route.ts` — added `Cache-Control: no-cache, no-store` to NextResponse.json via headers option
+- `src/app/api/uploads/[...path]/route.ts` — already had `public, max-age=31536000, immutable` (no change needed)
+- `src/app/(blog)/page.tsx` — added `export const revalidate = 60` after imports
+- `src/app/(blog)/posts/[slug]/page.tsx` — added `export const revalidate = 60` after imports
+
+### Cache patterns
+- RSS feed: `public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400` — hourly CDN cache, stale-while-revalidate for smooth reloads
+- Health check: `no-cache, no-store` — never cache (always fresh for monitoring tools)
+- Uploaded images: `public, max-age=31536000, immutable` — 1-year browser/CDN cache (UUID names = content-addressable, never change)
+- Next.js ISR: `export const revalidate = 60` — background revalidation every 60s
+
+### NextResponse.json headers
+- Pass headers as third option in `NextResponse.json(data, { status, headers: { 'Cache-Control': '...' } })` — NOT a separate `.headers.set()` call
+
+### Build observation
+- Blog list page `/` shows as `ƒ` (dynamic) not `○` (static) because it reads `searchParams` — ISR revalidate still applies in dynamic mode
+- Must use `--webpack` flag: `node_modules/.bin/next build --webpack` (webpack config in next.config.ts)
