@@ -55,9 +55,9 @@ type PostRow = {
   updatedAt: Date | null
   publishedAt: Date | null
   authorName: string | null
-  authorEmail: string
+  authorEmail: string | null
   authorImage: string | null
-  authorRole: 'admin' | 'user'
+  authorRole: 'admin' | 'user' | null
   authorCreatedAt: Date | null
   commentCount: number
 }
@@ -74,9 +74,9 @@ function rowToPostView(row: PostRow, tags: TagView[]): PostView {
     author: {
       id: row.authorId ?? '',
       name: row.authorName,
-      email: row.authorEmail,
+      email: row.authorEmail ?? '',
       image: row.authorImage,
-      role: row.authorRole,
+      role: row.authorRole ?? 'user',
       createdAt: row.authorCreatedAt ? row.authorCreatedAt.getTime() : 0,
     },
     status: row.status,

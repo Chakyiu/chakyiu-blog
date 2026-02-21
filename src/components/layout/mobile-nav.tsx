@@ -3,8 +3,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import type { SessionUser } from "@/types";
 
-export function MobileNav() {
+export function MobileNav({ user }: { user: SessionUser | null }) {
   const [open, setOpen] = useState(false);
   
   return (
@@ -20,17 +21,34 @@ export function MobileNav() {
       </Button>
       
       {open && (
-        <div 
-          className="fixed inset-0 top-14 z-50 bg-background/95 backdrop-blur"
-          data-testid="mobile-menu"
-        >
-          <nav className="container mx-auto px-4 py-4 flex flex-col gap-2">
-            <Link href="/" onClick={() => setOpen(false)} className="text-lg font-medium py-2 border-b border-border hover:text-primary">Posts</Link>
-            <Link href="/tags" onClick={() => setOpen(false)} className="text-lg font-medium py-2 border-b border-border hover:text-primary">Tags</Link>
-            <Link href="/search" onClick={() => setOpen(false)} className="text-lg font-medium py-2 border-b border-border hover:text-primary">Search</Link>
-            <Link href="/auth/login" onClick={() => setOpen(false)} className="text-lg font-medium py-2 hover:text-primary">Sign In</Link>
-          </nav>
-        </div>
+        <>
+          <div
+            className="fixed inset-0 top-14 z-40 bg-black/20"
+            onClick={() => setOpen(false)}
+          />
+          <div 
+            className="fixed left-0 right-0 top-14 z-50 bg-background border-b border-border shadow-lg"
+            data-testid="mobile-menu"
+          >
+            <nav className="container mx-auto px-4 py-3 flex flex-col">
+              <Link href="/" onClick={() => setOpen(false)} className="text-sm font-medium py-3 border-b border-border hover:text-primary transition-colors">Posts</Link>
+              <Link href="/tags" onClick={() => setOpen(false)} className="text-sm font-medium py-3 border-b border-border hover:text-primary transition-colors">Tags</Link>
+              <Link href="/search" onClick={() => setOpen(false)} className="text-sm font-medium py-3 border-b border-border hover:text-primary transition-colors">Search</Link>
+              {user ? (
+                <>
+                  {user.role === "admin" && (
+                    <Link href="/admin" onClick={() => setOpen(false)} className="text-sm font-medium py-3 border-b border-border hover:text-primary transition-colors">Admin</Link>
+                  )}
+                  <Link href="/history" onClick={() => setOpen(false)} className="text-sm font-medium py-3 border-b border-border hover:text-primary transition-colors">Comment History</Link>
+                  <Link href="/settings" onClick={() => setOpen(false)} className="text-sm font-medium py-3 border-b border-border hover:text-primary transition-colors">Settings</Link>
+                  <Link href="/auth/signout" onClick={() => setOpen(false)} className="text-sm font-medium py-3 hover:text-primary transition-colors">Log out</Link>
+                </>
+              ) : (
+                <Link href="/auth/login" onClick={() => setOpen(false)} className="text-sm font-medium py-3 hover:text-primary transition-colors">Sign In</Link>
+              )}
+            </nav>
+          </div>
+        </>
       )}
     </>
   );

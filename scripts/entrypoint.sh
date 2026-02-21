@@ -1,4 +1,4 @@
 #!/bin/sh
 set -e
 bun run migrate
-exec node .next/standalone/server.js
+exec bun .next/standalone/server.js

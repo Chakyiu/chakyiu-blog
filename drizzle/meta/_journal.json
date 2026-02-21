@@ -8,6 +8,13 @@
       "when": 1771561885318,
       "tag": "0000_purple_ghost_rider",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1740038400000,
+      "tag": "0001_fix_accounts_composite_key",
+      "breakpoints": true
     }
   ]
 }

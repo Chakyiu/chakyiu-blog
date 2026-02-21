@@ -51,8 +51,8 @@ export async function Header() {
             </Button>
           )}
           
-          <div className="" id="mobile-nav-container">
-            <MobileNav />
+          <div className="md:hidden" id="mobile-nav-container">
+            <MobileNav user={user} />
           </div>
         </div>
       </div>

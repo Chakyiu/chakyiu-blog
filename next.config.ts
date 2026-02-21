@@ -1,10 +1,4 @@
 import type { NextConfig } from "next";
-import path from "path";
-
-const mockPath = path.resolve(
-  __dirname,
-  "src/lib/db/bun-sqlite-mock.cjs"
-);
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -14,17 +8,23 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "127.0.0.1" },
     ],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, nextRuntime }) => {
     if (isServer) {
       const externals = Array.isArray(config.externals)
         ? config.externals
         : config.externals
-        ? [config.externals]
-        : [];
-      config.externals = [
-        { "bun:sqlite": `commonjs ${mockPath}` },
-        ...externals.filter((ext: unknown) => ext !== "bun:sqlite"),
-      ];
+          ? [config.externals]
+          : [];
+      // nextRuntime === 'nodejs'  → API routes & RSC run in Bun's runtime,
+      //   so mark bun:sqlite as a real external that Bun resolves natively.
+      // nextRuntime === 'edge'    → middleware no longer imports bun:sqlite
+      //   (auth.config.ts is DB-free), so no special handling needed.
+      if (nextRuntime === "nodejs") {
+        config.externals = [
+          { "bun:sqlite": "commonjs bun:sqlite" },
+          ...externals.filter((ext: unknown) => ext !== "bun:sqlite"),
+        ];
+      }
     }
     return config;
   },
