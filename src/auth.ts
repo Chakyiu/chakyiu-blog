@@ -70,10 +70,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return token;
     },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+    async session({ session, token, user }) {
+      if (session.user) {
+        // JWT strategy (Credentials login): role comes from token
+        if (token?.id) {
+          session.user.id = token.id as string;
+          session.user.role = (token.role as string) ?? "user";
+        }
+        // Database strategy (OAuth / GitHub login): DrizzleAdapter only passes
+        // standard fields, so we must query the DB for the role ourselves.
+        if (user?.id) {
+          session.user.id = user.id;
+          const dbUser = await db.query.users.findFirst({
+            where: eq(users.id, user.id),
+            columns: { role: true },
+          });
+          session.user.role = dbUser?.role ?? "user";
+        }
       }
       return session;
     },

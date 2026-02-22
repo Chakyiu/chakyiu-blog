@@ -5,7 +5,7 @@ import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
 import { createTagSchema, updateTagSchema } from '@/lib/validators/tag'
 import type { ActionResult, TagView } from '@/types'
-import { eq, sql } from 'drizzle-orm'
+import { eq, sql, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { randomUUID } from 'crypto'
 
@@ -26,11 +26,19 @@ export async function getTags(): Promise<ActionResult<TagView[]>> {
         name: schema.tags.name,
         slug: schema.tags.slug,
         color: schema.tags.color,
-        postCount: sql<number>`count(${schema.postTags.tagId})`,
+        postCount: sql<number>`count(${schema.posts.id})`,
       })
       .from(schema.tags)
       .leftJoin(schema.postTags, eq(schema.tags.id, schema.postTags.tagId))
+      .leftJoin(
+        schema.posts,
+        and(
+          eq(schema.postTags.postId, schema.posts.id),
+          eq(schema.posts.status, 'published'),
+        ),
+      )
       .groupBy(schema.tags.id)
+      .having(sql`count(${schema.posts.id}) > 0`)
 
     return {
       success: true,
@@ -55,10 +63,17 @@ export async function getTagBySlug(slug: string): Promise<ActionResult<TagView>>
         name: schema.tags.name,
         slug: schema.tags.slug,
         color: schema.tags.color,
-        postCount: sql<number>`count(${schema.postTags.tagId})`,
+        postCount: sql<number>`count(${schema.posts.id})`,
       })
       .from(schema.tags)
       .leftJoin(schema.postTags, eq(schema.tags.id, schema.postTags.tagId))
+      .leftJoin(
+        schema.posts,
+        and(
+          eq(schema.postTags.postId, schema.posts.id),
+          eq(schema.posts.status, 'published'),
+        ),
+      )
       .where(eq(schema.tags.slug, slug))
       .groupBy(schema.tags.id)
 

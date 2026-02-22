@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import Link from "next/link"
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,10 +8,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import type { SessionUser } from "@/types"
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { SessionUser } from "@/types";
 
 export function UserNav({ user }: { user: SessionUser }) {
   return (
@@ -20,11 +20,19 @@ export function UserNav({ user }: { user: SessionUser }) {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.image ?? ""} alt={user.name ?? ""} />
-            <AvatarFallback>{user.name?.[0]?.toUpperCase() ?? "U"}</AvatarFallback>
+            <AvatarFallback>
+              {user.name?.[0]?.toUpperCase() ?? "U"}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 pb-2" align="end" forceMount>
+      <DropdownMenuContent
+        className="w-56 pb-2"
+        style={{ backgroundColor: "hsl(var(--background))" }}
+        align="end"
+        sideOffset={8}
+        forceMount
+      >
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.name}</p>
@@ -37,30 +45,25 @@ export function UserNav({ user }: { user: SessionUser }) {
         {user.role === "admin" && (
           <>
             <DropdownMenuItem asChild>
-              <Link href="/admin">
-                Admin Dashboard
-              </Link>
+              <Link href="/admin">Admin Dashboard</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/admin/posts">Admin Posts</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
         )}
         <DropdownMenuItem asChild>
-          <Link href="/history">
-            My Comment History
-          </Link>
+          <Link href="/history">My Comment History</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/settings">
-            Settings
-          </Link>
+          <Link href="/settings">Settings</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/auth/signout">
-            Log out
-          </Link>
+          <Link href="/auth/signout">Log out</Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
