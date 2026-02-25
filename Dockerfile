@@ -15,6 +15,8 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+RUN mkdir -p ./data
+RUN bun run migrate
 RUN bun run build
 
 # Stage 3: Production runner
@@ -29,10 +31,16 @@ ENV PORT=3000
 # Copy standalone server output
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/data ./data
 
 # Copy drizzle migrations
 COPY --from=builder /app/drizzle ./drizzle
+
+# Copy migration script so it can run at container start
+COPY --from=builder /app/src/lib/db/migrate.ts ./src/lib/db/migrate.ts
+
+# Ensure drizzle-orm migrator is available (standalone trace may not include it)
+COPY --from=builder /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
 
 # Copy entrypoint script
 COPY scripts/entrypoint.sh ./scripts/entrypoint.sh

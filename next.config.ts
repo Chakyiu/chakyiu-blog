@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "127.0.0.1" },
     ],
   },
+  turbopack: {
+    resolveAlias: {
+      // Tell Turbopack that bun:sqlite is a native Bun built-in;
+      // it will be left as an external and resolved at runtime by Bun.
+      "bun:sqlite": "bun:sqlite",
+    },
+  },
   webpack: (config, { isServer, nextRuntime }) => {
     if (isServer) {
       const externals = Array.isArray(config.externals)
