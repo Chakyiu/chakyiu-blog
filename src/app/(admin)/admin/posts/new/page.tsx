@@ -1,10 +1,10 @@
 import { requireAdmin } from '@/lib/auth/helpers'
-import { getTags } from '@/lib/actions/tags'
+import { getAllTags } from '@/lib/actions/tags'
 import { PostForm } from '@/components/blog/post-form'
 
 export default async function NewPostPage() {
   await requireAdmin()
-  const tagsResult = await getTags()
+  const tagsResult = await getAllTags()
   const tags = tagsResult.success ? tagsResult.data : []
 
   return (

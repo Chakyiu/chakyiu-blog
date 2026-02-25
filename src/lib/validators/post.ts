@@ -17,7 +17,10 @@ export const createPostSchema = z.object({
     .nullable(),
   coverImageUrl: z
     .string()
-    .url('Cover image must be a valid URL')
+    .refine(
+      (val) => val.startsWith('/api/uploads/') || z.string().url().safeParse(val).success,
+      'Cover image must be a valid URL or an uploaded file path'
+    )
     .optional()
     .nullable(),
   status: z
@@ -48,7 +51,10 @@ export const updatePostSchema = z.object({
     .nullable(),
   coverImageUrl: z
     .string()
-    .url('Cover image must be a valid URL')
+    .refine(
+      (val) => val.startsWith('/api/uploads/') || z.string().url().safeParse(val).success,
+      'Cover image must be a valid URL or an uploaded file path'
+    )
     .optional()
     .nullable(),
   status: z

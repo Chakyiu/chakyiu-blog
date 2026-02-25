@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { requireAdmin } from '@/lib/auth/helpers'
 import { getPostById } from '@/lib/actions/posts'
-import { getTags } from '@/lib/actions/tags'
+import { getAllTags } from '@/lib/actions/tags'
 import { PostForm } from '@/components/blog/post-form'
 
 interface EditPostPageProps {
@@ -14,7 +14,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
   const [postResult, tagsResult] = await Promise.all([
     getPostById(id),
-    getTags(),
+    getAllTags(),
   ])
 
   if (!postResult.success) {

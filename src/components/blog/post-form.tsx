@@ -60,6 +60,17 @@ export function PostForm({ tags, initialData }: PostFormProps) {
     const name = newTagName.trim()
     if (!name) return
 
+    // If a tag with the same name already exists, just select it
+    const slug = name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-').replace(/^-+|-+$/g, '')
+    const existing = availableTags.find((t) => t.slug === slug)
+    if (existing) {
+      if (!selectedTagIds.includes(existing.id)) {
+        setSelectedTagIds((prev) => [...prev, existing.id])
+      }
+      setNewTagName('')
+      return
+    }
+
     setIsCreatingTag(true)
     try {
       const result = await createTag(name, '#6e7781')

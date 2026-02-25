@@ -4,7 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/db";
 import { users, accounts, sessions, verificationTokens } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -42,6 +42,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  events: {
+    async createUser({ user }) {
+      // Auto-promote the first user in the system to admin (covers OAuth sign-up)
+      const count = db.select({ count: sql<number>`count(*)` }).from(users).get();
+      if ((count?.count ?? 0) === 1) {
+        db.update(users).set({ role: 'admin' }).where(eq(users.id, user.id!)).run();
+      }
+    },
+  },
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account }) {

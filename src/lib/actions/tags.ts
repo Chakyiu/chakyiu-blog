@@ -55,6 +55,35 @@ export async function getTags(): Promise<ActionResult<TagView[]>> {
   }
 }
 
+export async function getAllTags(): Promise<ActionResult<TagView[]>> {
+  try {
+    const rows = await db
+      .select({
+        id: schema.tags.id,
+        name: schema.tags.name,
+        slug: schema.tags.slug,
+        color: schema.tags.color,
+        postCount: sql<number>`count(${schema.postTags.postId})`,
+      })
+      .from(schema.tags)
+      .leftJoin(schema.postTags, eq(schema.tags.id, schema.postTags.tagId))
+      .groupBy(schema.tags.id)
+
+    return {
+      success: true,
+      data: rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        slug: row.slug,
+        color: row.color,
+        postCount: Number(row.postCount),
+      })),
+    }
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to fetch tags' }
+  }
+}
+
 export async function getTagBySlug(slug: string): Promise<ActionResult<TagView>> {
   try {
     const rows = await db

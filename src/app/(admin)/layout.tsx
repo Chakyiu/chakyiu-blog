@@ -6,6 +6,7 @@ const adminNavItems = [
   { href: "/admin/projects", label: "Projects" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/comments", label: "Comments" },
+  { href: "/admin/tags", label: "Tags" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
