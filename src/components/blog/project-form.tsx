@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { createProject, updateProject, fetchGithubReadme } from '@/lib/actions/projects'
 import type { ProjectView } from '@/types'
-import { Loader2, RefreshCw, Github } from 'lucide-react'
+import { Loader2, RefreshCw, Github, Upload, X } from 'lucide-react'
 
 interface ProjectFormProps {
   initialData?: ProjectView
@@ -27,6 +27,8 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isFetchingReadme, setIsFetchingReadme] = React.useState(false)
+  const [isUploadingImage, setIsUploadingImage] = React.useState(false)
+  const imageInputRef = React.useRef<HTMLInputElement>(null)
 
   const [title, setTitle] = React.useState(initialData?.title ?? '')
   const [description, setDescription] = React.useState(initialData?.description ?? '')
@@ -211,15 +213,77 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="imageUrl">Cover Image URL (Optional)</Label>
-        <Input
-          id="imageUrl"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder="https://example.com/screenshot.png"
-        />
+        <Label htmlFor="imageUrl">Cover Image (Optional)</Label>
+        <div className="flex gap-2">
+          <Input
+            id="imageUrl"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="https://example.com/screenshot.png"
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={isUploadingImage}
+          >
+            {isUploadingImage ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Upload className="h-4 w-4 mr-2" />
+            )}
+            {isUploadingImage ? 'Uploading…' : 'Upload'}
+          </Button>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              setIsUploadingImage(true)
+              try {
+                const formData = new FormData()
+                formData.append('file', file)
+                const res = await fetch('/api/upload', { method: 'POST', body: formData })
+                if (!res.ok) {
+                  const err = await res.json().catch(() => ({}))
+                  throw new Error(err?.error ?? 'Upload failed')
+                }
+                const { url } = await res.json()
+                setImageUrl(url)
+                toast({ title: 'Image uploaded', description: 'Cover image set successfully.' })
+              } catch (err) {
+                toast({
+                  title: 'Upload failed',
+                  description: err instanceof Error ? err.message : 'Could not upload image.',
+                  variant: 'destructive',
+                })
+              } finally {
+                setIsUploadingImage(false)
+                e.target.value = ''
+              }
+            }}
+          />
+        </div>
+        {imageUrl && (
+          <div className="relative w-40 h-24 rounded-md overflow-hidden border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={imageUrl} alt="Cover preview" className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => setImageUrl('')}
+              className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white hover:bg-black/80"
+              aria-label="Remove cover image"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">
-          Displayed as the project card thumbnail.
+          Paste a URL or upload a file. Displayed as the project card thumbnail.
         </p>
       </div>
 

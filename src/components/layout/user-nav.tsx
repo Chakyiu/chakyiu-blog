@@ -47,9 +47,6 @@ export function UserNav({ user }: { user: SessionUser }) {
             <DropdownMenuItem asChild>
               <Link href="/admin">Admin Dashboard</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/admin/posts">Admin Posts</Link>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
         )}

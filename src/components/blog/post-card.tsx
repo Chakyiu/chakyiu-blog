@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { PostView } from '@/types'
 import { TagBadge } from '@/components/blog/tag-badge'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,6 +20,17 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <Card className="flex flex-col h-full overflow-hidden transition-all hover:shadow-md">
+      {post.coverImageUrl && (
+        <Link href={`/posts/${post.slug}`} className="block relative w-full aspect-video overflow-hidden">
+          <Image
+            src={post.coverImageUrl}
+            alt={post.title}
+            fill
+            className="object-cover transition-transform hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </Link>
+      )}
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2 mb-2">
           {post.tags.map((tag) => (

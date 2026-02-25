@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { createPost, updatePost } from '@/lib/actions/posts'
 import { createTag } from '@/lib/actions/tags'
 import type { PostView, TagView } from '@/types'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Upload, X } from 'lucide-react'
 
 interface PostFormProps {
   tags: TagView[]
@@ -29,10 +29,13 @@ export function PostForm({ tags, initialData }: PostFormProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [isUploadingImage, setIsUploadingImage] = React.useState(false)
+  const imageInputRef = React.useRef<HTMLInputElement>(null)
 
   const [title, setTitle] = React.useState(initialData?.title ?? '')
   const [content, setContent] = React.useState(initialData?.content ?? '')
   const [excerpt, setExcerpt] = React.useState(initialData?.excerpt ?? '')
+  const [coverImageUrl, setCoverImageUrl] = React.useState(initialData?.coverImageUrl ?? '')
   const [status, setStatus] = React.useState<'draft' | 'published' | 'archived'>(
     initialData?.status ?? 'draft'
   )
@@ -90,6 +93,7 @@ export function PostForm({ tags, initialData }: PostFormProps) {
         title,
         content,
         excerpt: excerpt || null,
+        coverImageUrl: coverImageUrl || null,
         status,
         tagIds: selectedTagIds,
       }
@@ -206,6 +210,81 @@ export function PostForm({ tags, initialData }: PostFormProps) {
           onChange={setContent}
           minHeight={500}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="coverImageUrl">Cover Image (Optional)</Label>
+        <div className="flex gap-2">
+          <Input
+            id="coverImageUrl"
+            value={coverImageUrl}
+            onChange={(e) => setCoverImageUrl(e.target.value)}
+            placeholder="https://example.com/image.png"
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={isUploadingImage}
+          >
+            {isUploadingImage ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Upload className="h-4 w-4 mr-2" />
+            )}
+            {isUploadingImage ? 'Uploading…' : 'Upload'}
+          </Button>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              setIsUploadingImage(true)
+              try {
+                const formData = new FormData()
+                formData.append('file', file)
+                const res = await fetch('/api/upload', { method: 'POST', body: formData })
+                if (!res.ok) {
+                  const err = await res.json().catch(() => ({}))
+                  throw new Error(err?.error ?? 'Upload failed')
+                }
+                const { url } = await res.json()
+                setCoverImageUrl(url)
+                toast({ title: 'Image uploaded', description: 'Cover image set successfully.' })
+              } catch (err) {
+                toast({
+                  title: 'Upload failed',
+                  description: err instanceof Error ? err.message : 'Could not upload image.',
+                  variant: 'destructive',
+                })
+              } finally {
+                setIsUploadingImage(false)
+                e.target.value = ''
+              }
+            }}
+          />
+        </div>
+        {coverImageUrl && (
+          <div className="relative w-full max-w-xs h-32 rounded-md overflow-hidden border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={coverImageUrl} alt="Cover preview" className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => setCoverImageUrl('')}
+              className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white hover:bg-black/80"
+              aria-label="Remove cover image"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Paste a URL or upload a file. Displayed as the post cover image.
+        </p>
       </div>
 
       <div className="flex justify-end gap-4">

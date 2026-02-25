@@ -147,3 +147,69 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
 }
+
+/* Custom prose overrides for consistent theme colors */
+.prose {
+  --tw-prose-body: hsl(var(--foreground));
+  --tw-prose-headings: hsl(var(--foreground));
+  --tw-prose-lead: hsl(var(--muted-foreground));
+  --tw-prose-links: hsl(var(--primary));
+  --tw-prose-bold: hsl(var(--foreground));
+  --tw-prose-counters: hsl(var(--muted-foreground));
+  --tw-prose-bullets: hsl(var(--muted-foreground));
+  --tw-prose-hr: hsl(var(--border));
+  --tw-prose-quotes: hsl(var(--muted-foreground));
+  --tw-prose-quote-borders: hsl(var(--border));
+  --tw-prose-captions: hsl(var(--muted-foreground));
+  --tw-prose-code: hsl(var(--foreground));
+  --tw-prose-pre-code: hsl(var(--foreground));
+  --tw-prose-pre-bg: hsl(var(--muted));
+  --tw-prose-th-borders: hsl(var(--border));
+  --tw-prose-td-borders: hsl(var(--border));
+}
+
+.prose :not(pre) > code {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+/* Ensure strong text has good contrast */
+.prose strong {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+/* Ensure blockquotes stand out */
+.prose blockquote {
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+  border-left-color: hsl(var(--border));
+}
+
+/* Ensure links are visible */
+.prose a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+/* Fix table borders */
+.prose table {
+  font-size: 0.875em;
+}
+
+.prose thead th {
+  color: hsl(var(--foreground));
+  border-bottom-color: hsl(var(--border));
+}
+
+.prose tbody td {
+  border-bottom-color: hsl(var(--border));
+}

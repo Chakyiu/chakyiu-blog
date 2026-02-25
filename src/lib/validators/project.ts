@@ -20,7 +20,10 @@ export const createProjectSchema = z.object({
     .nullable(),
   imageUrl: z
     .string()
-    .url('Image URL must be a valid URL')
+    .refine(
+      (val) => val.startsWith('/api/uploads/') || z.string().url().safeParse(val).success,
+      'Image URL must be a valid URL or an uploaded file path'
+    )
     .optional()
     .nullable(),
   status: z
@@ -49,7 +52,10 @@ export const updateProjectSchema = z.object({
     .nullable(),
   imageUrl: z
     .string()
-    .url('Image URL must be a valid URL')
+    .refine(
+      (val) => val.startsWith('/api/uploads/') || z.string().url().safeParse(val).success,
+      'Image URL must be a valid URL or an uploaded file path'
+    )
     .optional()
     .nullable(),
   status: z

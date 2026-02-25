@@ -7,14 +7,15 @@ export function MarkdownContent({ renderedHtml, className }: MarkdownContentProp
   return (
     <>
       <style>{`
-        .shiki.github-dark { display: none; }
-        .dark .shiki.github-light { display: none; }
-        .dark .shiki.github-dark { display: block; }
+        .shiki.github-light { display: block !important; }
+        .shiki.github-dark { display: none !important; }
+        .dark .shiki.github-light { display: none !important; }
+        .dark .shiki.github-dark { display: block !important; }
       `}</style>
       <div
         className={[
           'prose prose-neutral dark:prose-invert max-w-none',
-          'prose-pre:p-0 prose-pre:bg-transparent',
+          'prose-pre:rounded-md prose-pre:overflow-hidden',
           'prose-code:before:content-none prose-code:after:content-none',
           className,
         ]
