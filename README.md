@@ -6,14 +6,16 @@ A developer blog built with Next.js 16 and Bun. It prioritizes speed, simplicity
 
 - **Next.js 16 App Router**: High performance server components and layouts.
 - **Markdown Support**: Write posts in Markdown with Shiki syntax highlighting.
+- **Cover Images**: Upload or link cover images for posts and projects.
+- **Project Showcase**: Dedicated section for projects with GitHub README auto-import.
 - **Instant Search**: Full-text search powered by SQLite FTS5.
 - **Complete Auth**: Email, password, and GitHub OAuth support via Auth.js v5.
-- **Admin Dashboard**: Secure management of posts, tags, comments, and users.
+- **Admin Dashboard**: Secure management of posts, projects, tags, comments, and users.
 - **Comments**: Built-in reply system with XSS protection.
 - **Notifications**: Real-time alerts for user interactions.
-- **Media Management**: Simple image upload system for blog posts.
+- **Media Management**: Simple image upload system for blog posts and projects.
 - **SEO Ready**: Automated RSS 2.0 feed, Open Graph tags, and JSON-LD.
-- **Theme Support**: Built-in dark and light modes.
+- **Theme Support**: Built-in dark and light modes with consistent typography.
 
 ## Tech Stack
 
@@ -103,6 +105,8 @@ This command builds the container and starts the blog. Data is saved in a volume
 ### Public
 - `/`: Home page with post list
 - `/posts/[slug]`: Detailed blog post view
+- `/projects`: Project showcase
+- `/projects/[slug]`: Detailed project view
 - `/search`: Site-wide search
 - `/feed.xml`: RSS 2.0 feed
 - `/api/health`: Health check endpoint
@@ -117,6 +121,7 @@ This command builds the container and starts the blog. Data is saved in a volume
 ### Admin
 - `/admin`: Main dashboard
 - `/admin/posts`: Post management
+- `/admin/projects`: Project management
 - `/admin/tags`: Tag management
 - `/admin/comments`: Comment moderation
 - `/admin/users`: User management
