@@ -1,10 +1,11 @@
-# ChaKyiu Blog — IT Developer Blog (Next.js 16)
+# Chakyiu Blog — IT Developer Blog (Next.js 16)
 
 ## TL;DR
 
 > **Quick Summary**: Build a full-featured IT developer blog with GitHub PR-like layout, using Next.js 16 + Drizzle ORM + SQLite + Auth.js v5. Supports markdown posts with code highlighting, threaded comments, admin panel, search, notifications, and Docker deployment.
-> 
+>
 > **Deliverables**:
+>
 > - Full-stack Next.js 16 blog application
 > - Auth system (email+password + GitHub OAuth) with RBAC
 > - Blog CRUD with markdown editor + Shiki code highlighting
@@ -16,7 +17,7 @@
 > - Dark/light mode toggle
 > - RSS feed
 > - Docker deployment with multi-stage build
-> 
+>
 > **Estimated Effort**: XL (25+ tasks across 6 waves)
 > **Parallel Execution**: YES — 6 waves, up to 8 concurrent tasks
 > **Critical Path**: Scaffolding → DB Schema → Auth → Blog CRUD → Comments → Integration
@@ -26,10 +27,13 @@
 ## Context
 
 ### Original Request
+
 Build a personal blog web app using Next.js 16 with a layout inspired by GitHub's Pull Requests page. Only admins can create posts. Signed-in users can comment, reply, and view their history/notifications. Admin can edit/remove posts and moderate comments. SQLite for storage. Email + GitHub OAuth for signin.
 
 ### Interview Summary
+
 **Key Discussions**:
+
 - **Package manager/runtime**: bun (native SQLite support via bun:sqlite)
 - **Post authoring**: Markdown with live preview, stored in DB (not MDX files)
 - **Notifications**: In-app only (no email service dependency)
@@ -42,6 +46,7 @@ Build a personal blog web app using Next.js 16 with a layout inspired by GitHub'
 - **Extra features**: Tags, search, image uploads, dark/light mode, code highlighting, RSS feed
 
 **Research Findings**:
+
 - Next.js 16 uses `proxy.ts` instead of `middleware.ts` for auth — breaking change from v15
 - Auth.js v5 Credentials provider forces JWT session strategy (no database sessions)
 - `Bun.password.hash()` uses Argon2id natively — no bcrypt dependency needed
@@ -49,7 +54,9 @@ Build a personal blog web app using Next.js 16 with a layout inspired by GitHub'
 - shadcn/ui + Tailwind CSS v4 provide closest GitHub-like developer aesthetic
 
 ### Metis Review
+
 **Identified Gaps** (addressed in plan):
+
 - Account linking conflict (email+password vs GitHub OAuth same email) → Block with clear error message
 - XSS in user-submitted markdown comments → `rehype-sanitize` mandatory
 - First-user admin race condition → DB transaction with user count check
@@ -64,9 +71,11 @@ Build a personal blog web app using Next.js 16 with a layout inspired by GitHub'
 ## Work Objectives
 
 ### Core Objective
+
 Build a production-ready IT developer blog with GitHub PR-inspired layout, full auth, markdown authoring, threaded comments, and Docker deployment — all backed by SQLite for simplicity.
 
 ### Concrete Deliverables
+
 - Next.js 16 app with App Router at `http://localhost:3000`
 - SQLite database at `/data/sqlite.db` (Docker volume)
 - Auth: register, login, logout, GitHub OAuth, role-based access
@@ -81,6 +90,7 @@ Build a production-ready IT developer blog with GitHub PR-inspired layout, full 
 - Docker: `Dockerfile` + `docker-compose.yml`
 
 ### Definition of Done
+
 - [ ] `docker compose up` starts the application successfully
 - [ ] `curl http://localhost:3000/api/health` returns `200 OK`
 - [ ] Can register first user → automatically admin
@@ -94,6 +104,7 @@ Build a production-ready IT developer blog with GitHub PR-inspired layout, full 
 - [ ] All `bun test` pass
 
 ### Must Have
+
 - Server-side markdown rendering (never ship parser to client)
 - Pre-rendered code highlighting at save time (store raw + HTML in DB)
 - XSS sanitization on all user-submitted markdown via `rehype-sanitize`
@@ -106,6 +117,7 @@ Build a production-ready IT developer blog with GitHub PR-inspired layout, full 
 - FTS5 via raw SQL in Drizzle migrations
 
 ### Must NOT Have (Guardrails)
+
 - No client-side state management libraries (Redux, Zustand, etc.)
 - No custom `.css` files (Tailwind + shadcn/ui only, except `globals.css`)
 - No API routes for internal data (Server Actions only; API routes only for RSS, image serving, health, auth handlers)
@@ -130,12 +142,14 @@ Build a production-ready IT developer blog with GitHub PR-inspired layout, full 
 > Acceptance criteria requiring "user manually tests/confirms" are FORBIDDEN.
 
 ### Test Decision
+
 - **Infrastructure exists**: NO (greenfield)
 - **Automated tests**: YES (tests after implementation)
 - **Framework**: bun test (built-in to bun runtime)
 - **Setup**: Task 1 includes bun test configuration
 
 ### QA Policy
+
 Every task MUST include agent-executed QA scenarios.
 Evidence saved to `.sisyphus/evidence/task-{N}-{scenario-slug}.{ext}`.
 
@@ -202,51 +216,51 @@ Max Concurrent: 6 (Waves 1-3)
 
 ### Dependency Matrix
 
-| Task | Depends On | Blocks | Wave |
-|------|-----------|--------|------|
-| 1 | — | 2-28 | 1 |
-| 2 | 1 | 7, 9, 10, 12, 13, 15, 17, 18 | 1 |
-| 3 | 1 | 7, 13, 14, 15, 16, 19, 22 | 1 |
-| 4 | 1 | 6, 10, 11 | 1 |
-| 5 | 1 | 7, 13, 15, 17 | 1 |
-| 6 | 1, 4 | 10, 11, 16, 19, 20, 22 | 1 |
-| 7 | 2, 3, 5 | 8, 10, 11 | 2 |
-| 8 | 7, 9 | — | 2 |
-| 9 | 2, 5 | 8, 11, 13 | 2 |
-| 10 | 2, 6, 7, 12 | — | 2 |
-| 11 | 6, 7, 9 | 13 | 2 |
-| 12 | 2, 3 | 10 | 2 |
-| 13 | 2, 3, 5, 9, 11 | 14, 15, 16 | 3 |
-| 14 | 3, 13 | 20 | 3 |
-| 15 | 2, 3, 5, 13 | — | 3 |
-| 16 | 3, 6, 13 | — | 3 |
-| 17 | 2, 5, 8 | — | 3 |
-| 18 | 2, 6 | — | 3 |
-| 19 | 3, 6 | — | 4 |
-| 20 | 6, 14 | — | 4 |
-| 21 | 2, 9 | — | 4 |
-| 22 | 3, 6 | — | 4 |
-| 23 | 7, 11 | — | 4 |
-| 24 | 3, 7, 9 | — | 5 |
-| 25 | 13, 15, 18 | — | 5 |
-| 26 | ALL impl tasks | F1-F4 | 5 |
-| 27 | 10, 11, 13, 18 | — | 5 |
-| 28 | 1 | 26 | 5 |
-| F1 | ALL | — | FINAL |
-| F2 | ALL | — | FINAL |
-| F3 | ALL | — | FINAL |
-| F4 | ALL | — | FINAL |
+| Task | Depends On     | Blocks                       | Wave  |
+| ---- | -------------- | ---------------------------- | ----- |
+| 1    | —              | 2-28                         | 1     |
+| 2    | 1              | 7, 9, 10, 12, 13, 15, 17, 18 | 1     |
+| 3    | 1              | 7, 13, 14, 15, 16, 19, 22    | 1     |
+| 4    | 1              | 6, 10, 11                    | 1     |
+| 5    | 1              | 7, 13, 15, 17                | 1     |
+| 6    | 1, 4           | 10, 11, 16, 19, 20, 22       | 1     |
+| 7    | 2, 3, 5        | 8, 10, 11                    | 2     |
+| 8    | 7, 9           | —                            | 2     |
+| 9    | 2, 5           | 8, 11, 13                    | 2     |
+| 10   | 2, 6, 7, 12    | —                            | 2     |
+| 11   | 6, 7, 9        | 13                           | 2     |
+| 12   | 2, 3           | 10                           | 2     |
+| 13   | 2, 3, 5, 9, 11 | 14, 15, 16                   | 3     |
+| 14   | 3, 13          | 20                           | 3     |
+| 15   | 2, 3, 5, 13    | —                            | 3     |
+| 16   | 3, 6, 13       | —                            | 3     |
+| 17   | 2, 5, 8        | —                            | 3     |
+| 18   | 2, 6           | —                            | 3     |
+| 19   | 3, 6           | —                            | 4     |
+| 20   | 6, 14          | —                            | 4     |
+| 21   | 2, 9           | —                            | 4     |
+| 22   | 3, 6           | —                            | 4     |
+| 23   | 7, 11          | —                            | 4     |
+| 24   | 3, 7, 9        | —                            | 5     |
+| 25   | 13, 15, 18     | —                            | 5     |
+| 26   | ALL impl tasks | F1-F4                        | 5     |
+| 27   | 10, 11, 13, 18 | —                            | 5     |
+| 28   | 1              | 26                           | 5     |
+| F1   | ALL            | —                            | FINAL |
+| F2   | ALL            | —                            | FINAL |
+| F3   | ALL            | —                            | FINAL |
+| F4   | ALL            | —                            | FINAL |
 
 ### Agent Dispatch Summary
 
-| Wave | Count | Tasks → Category |
-|------|-------|-----------------|
-| 1 | 6 | T1→`quick`, T2→`deep`, T3→`deep`, T4→`quick`, T5→`quick`, T6→`visual-engineering` |
-| 2 | 6 | T7→`unspecified-high`, T8→`visual-engineering`, T9→`deep`, T10→`visual-engineering`, T11→`visual-engineering`, T12→`unspecified-high` |
-| 3 | 6 | T13→`unspecified-high`, T14→`unspecified-high`, T15→`unspecified-high`, T16→`visual-engineering`, T17→`unspecified-high`, T18→`deep` |
-| 4 | 5 | T19→`visual-engineering`, T20→`visual-engineering`, T21→`quick`, T22→`visual-engineering`, T23→`quick` |
-| 5 | 5 | T24→`deep`, T25→`deep`, T26→`unspecified-high`, T27→`visual-engineering`, T28→`quick` |
-| FINAL | 4 | F1→`oracle`, F2→`unspecified-high`, F3→`unspecified-high`, F4→`deep` |
+| Wave  | Count | Tasks → Category                                                                                                                      |
+| ----- | ----- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | 6     | T1→`quick`, T2→`deep`, T3→`deep`, T4→`quick`, T5→`quick`, T6→`visual-engineering`                                                     |
+| 2     | 6     | T7→`unspecified-high`, T8→`visual-engineering`, T9→`deep`, T10→`visual-engineering`, T11→`visual-engineering`, T12→`unspecified-high` |
+| 3     | 6     | T13→`unspecified-high`, T14→`unspecified-high`, T15→`unspecified-high`, T16→`visual-engineering`, T17→`unspecified-high`, T18→`deep`  |
+| 4     | 5     | T19→`visual-engineering`, T20→`visual-engineering`, T21→`quick`, T22→`visual-engineering`, T23→`quick`                                |
+| 5     | 5     | T24→`deep`, T25→`deep`, T26→`unspecified-high`, T27→`visual-engineering`, T28→`quick`                                                 |
+| FINAL | 4     | F1→`oracle`, F2→`unspecified-high`, F3→`unspecified-high`, F4→`deep`                                                                  |
 
 ---
 
@@ -1020,7 +1034,7 @@ Max Concurrent: 6 (Waves 1-3)
 
   **QA Scenarios**:
 
-  ```
+  ````
   Scenario: Markdown editor live preview works
     Tool: Playwright
     Preconditions: Logged in as admin, on /admin/posts/new
@@ -1052,7 +1066,7 @@ Max Concurrent: 6 (Waves 1-3)
     Expected Result: Post created and visible at its slug URL
     Failure Indicators: Form validation errors, redirect failure, post not found
     Evidence: .sisyphus/evidence/task-8-create-post-e2e.png
-  ```
+  ````
 
   **Commit**: YES
   - Message: `feat(editor): add markdown editor with live preview`
@@ -1127,7 +1141,7 @@ Max Concurrent: 6 (Waves 1-3)
 
   **QA Scenarios**:
 
-  ```
+  ````
   Scenario: Markdown renders with syntax highlighting
     Tool: Bash (bun script)
     Preconditions: Shiki and unified installed
@@ -1164,7 +1178,7 @@ Max Concurrent: 6 (Waves 1-3)
     Expected Result: Import in client component causes build error
     Failure Indicators: Build succeeds (means Shiki shipped to client bundle!)
     Evidence: .sisyphus/evidence/task-9-server-only.txt
-  ```
+  ````
 
   **Commit**: YES (groups with Task 7)
   - Message: `feat(blog): add post CRUD + markdown rendering pipeline`
@@ -1541,7 +1555,7 @@ Max Concurrent: 6 (Waves 1-3)
 
   **QA Scenarios**:
 
-  ```
+  ````
   Scenario: User posts a markdown comment
     Tool: Playwright
     Preconditions: Published post exists, user logged in (not admin)
@@ -1581,7 +1595,7 @@ Max Concurrent: 6 (Waves 1-3)
     Expected Result: Notification created for parent comment author
     Failure Indicators: No notification row, wrong userId
     Evidence: .sisyphus/evidence/task-13-reply-notification.txt
-  ```
+  ````
 
   **Commit**: YES (groups with Task 14)
   - Message: `feat(comments): add comment/reply system + moderation`
@@ -2243,7 +2257,7 @@ Max Concurrent: 6 (Waves 1-3)
     - Content: full rendered HTML in `<content:encoded>` CDATA section
     - Channel info: blog title, description, link, language, lastBuildDate
   - Add RSS autodiscovery link in root layout `<head>`:
-    - `<link rel="alternate" type="application/rss+xml" title="ChaKyiu Blog" href="/feed.xml" />`
+    - `<link rel="alternate" type="application/rss+xml" title="Chakyiu Blog" href="/feed.xml" />`
   - Add RSS icon/link in footer
   - No external RSS library — generate XML directly (RSS 2.0 is simple XML)
 
@@ -2416,7 +2430,7 @@ Max Concurrent: 6 (Waves 1-3)
 
   **What to do**:
   - Update `src/app/layout.tsx` — default metadata:
-    - Title template: `%s | ChaKyiu Blog`
+    - Title template: `%s | Chakyiu Blog`
     - Default description
     - Open Graph defaults (site name, type, locale)
     - Twitter card: summary_large_image
@@ -2583,7 +2597,6 @@ Max Concurrent: 6 (Waves 1-3)
   - `render.ts` is needed to verify markdown rendering produces correct HTML with code highlighting
 
   **Acceptance Criteria**:
-
   - [ ] Test files created: `src/lib/__tests__/setup.ts`, `src/lib/__tests__/auth.test.ts`, `src/lib/__tests__/blog-crud.test.ts`, `src/lib/__tests__/blog-queries.test.ts`
   - [ ] `bun test src/lib/__tests__/auth.test.ts` → PASS (7+ tests, 0 failures)
   - [ ] `bun test src/lib/__tests__/blog-crud.test.ts` → PASS (8+ tests, 0 failures)
@@ -2719,7 +2732,6 @@ Max Concurrent: 6 (Waves 1-3)
   - `search/queries.ts` wraps FTS5 — tests verify the raw SQL queries produce correct rankings
 
   **Acceptance Criteria**:
-
   - [ ] Test files created: `src/lib/__tests__/comments.test.ts`, `src/lib/__tests__/notifications.test.ts`, `src/lib/__tests__/search.test.ts`
   - [ ] `bun test src/lib/__tests__/comments.test.ts` → PASS (9+ tests, 0 failures)
   - [ ] `bun test src/lib/__tests__/notifications.test.ts` → PASS (7+ tests, 0 failures)
@@ -2847,7 +2859,6 @@ Max Concurrent: 6 (Waves 1-3)
   - Package.json scripts define the build/start commands the Dockerfile calls
 
   **Acceptance Criteria**:
-
   - [ ] Files created: `Dockerfile`, `docker-compose.yml`, `docker-entrypoint.sh`, `.dockerignore`, `.env.example`
   - [ ] `docker compose build` → succeeds with no errors
   - [ ] `docker compose up -d` → container starts and stays running
@@ -3004,7 +3015,6 @@ Max Concurrent: 6 (Waves 1-3)
   - Next.js conventions (error.tsx, loading.tsx, not-found.tsx) must follow exact export signatures
 
   **Acceptance Criteria**:
-
   - [ ] Skeleton components exist in `src/components/skeletons/` (4 files)
   - [ ] Empty state components exist in `src/components/empty-states/` (4 files)
   - [ ] `loading.tsx` files exist in 4 route segments
@@ -3143,7 +3153,6 @@ Max Concurrent: 6 (Waves 1-3)
   - Entrypoint script gets signal handling added to the existing migration + start logic
 
   **Acceptance Criteria**:
-
   - [ ] Files created: `src/app/api/health/route.ts`, `src/lib/db/health.ts`
   - [ ] Files updated: `docker-compose.yml` (healthcheck), `docker-entrypoint.sh` (signal handling), `src/lib/db/index.ts` (closeDatabase)
   - [ ] `curl http://localhost:3000/api/health` → 200 with `{"status":"ok","db":"connected",...}`
@@ -3224,50 +3233,51 @@ Max Concurrent: 6 (Waves 1-3)
 ## Final Verification Wave
 
 - [ ] F1. **Plan Compliance Audit** — `oracle`
-  Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, curl endpoint, run command). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in `.sisyphus/evidence/`. Compare deliverables against plan.
-  Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
+      Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, curl endpoint, run command). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in `.sisyphus/evidence/`. Compare deliverables against plan.
+      Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
 
 - [ ] F2. **Code Quality Review** — `unspecified-high`
-  Run `bun run build` (no errors) + `bun test` (all pass). Review all changed files for: `as any`/`@ts-ignore`, empty catches, `console.log` in prod, commented-out code, unused imports. Check AI slop: excessive comments, over-abstraction, generic variable names (data/result/item/temp). Verify no custom `.css` files except `globals.css`. Verify no client-side state management libraries. Verify Server Actions return `{ success, error?, data? }` consistently.
-  Output: `Build [PASS/FAIL] | Tests [N pass/N fail] | Files [N clean/N issues] | VERDICT`
+      Run `bun run build` (no errors) + `bun test` (all pass). Review all changed files for: `as any`/`@ts-ignore`, empty catches, `console.log` in prod, commented-out code, unused imports. Check AI slop: excessive comments, over-abstraction, generic variable names (data/result/item/temp). Verify no custom `.css` files except `globals.css`. Verify no client-side state management libraries. Verify Server Actions return `{ success, error?, data? }` consistently.
+      Output: `Build [PASS/FAIL] | Tests [N pass/N fail] | Files [N clean/N issues] | VERDICT`
 
 - [ ] F3. **Full QA — Playwright End-to-End** — `unspecified-high` (+ `playwright` skill)
-  Start from clean state (`docker compose down -v && docker compose up -d`). Execute EVERY QA scenario from EVERY task — follow exact steps, capture evidence. Test cross-task integration: register → become admin → create post with image → another user comments → admin gets notification → admin hides comment → user sees "[hidden]" → search finds post → RSS contains post. Test edge cases: XSS in comment, empty form submissions, invalid file upload, simultaneous first-user registration. Save to `.sisyphus/evidence/final-qa/`.
-  Output: `Scenarios [N/N pass] | Integration [N/N] | Edge Cases [N tested] | VERDICT`
+      Start from clean state (`docker compose down -v && docker compose up -d`). Execute EVERY QA scenario from EVERY task — follow exact steps, capture evidence. Test cross-task integration: register → become admin → create post with image → another user comments → admin gets notification → admin hides comment → user sees "[hidden]" → search finds post → RSS contains post. Test edge cases: XSS in comment, empty form submissions, invalid file upload, simultaneous first-user registration. Save to `.sisyphus/evidence/final-qa/`.
+      Output: `Scenarios [N/N pass] | Integration [N/N] | Edge Cases [N tested] | VERDICT`
 
 - [ ] F4. **Scope Fidelity Check** — `deep`
-  For each task: read "What to do", read actual code. Verify 1:1 — everything in spec was built (no missing), nothing beyond spec was built (no creep). Check "Must NOT do" compliance per task. Check global "Must NOT Have" guardrails. Detect cross-task contamination. Flag unaccounted changes. Verify no client-side markdown parser shipped. Verify no API routes used for internal data (only RSS, uploads, health, auth handlers).
-  Output: `Tasks [N/N compliant] | Guardrails [N/N] | Contamination [CLEAN/N issues] | VERDICT`
+      For each task: read "What to do", read actual code. Verify 1:1 — everything in spec was built (no missing), nothing beyond spec was built (no creep). Check "Must NOT do" compliance per task. Check global "Must NOT Have" guardrails. Detect cross-task contamination. Flag unaccounted changes. Verify no client-side markdown parser shipped. Verify no API routes used for internal data (only RSS, uploads, health, auth handlers).
+      Output: `Tasks [N/N compliant] | Guardrails [N/N] | Contamination [CLEAN/N issues] | VERDICT`
 
 ---
 
 ## Commit Strategy
 
-| After Task(s) | Commit Message | Pre-commit |
-|---------------|---------------|------------|
-| 1 | `chore(scaffold): init Next.js 16 + bun + tailwind + shadcn` | `bun run build` |
-| 2 | `feat(db): add Drizzle schema + SQLite migrations + FTS5` | `bun run build` |
-| 3 | `feat(auth): add Auth.js v5 with email+password + GitHub OAuth + RBAC` | `bun run build` |
-| 4, 5 | `feat(ui): add theme tokens + dark mode + shared types` | `bun run build` |
-| 6 | `feat(ui): add app shell layout + nav + sidebar + footer` | `bun run build` |
-| 7, 9 | `feat(blog): add post CRUD + markdown rendering pipeline` | `bun run build` |
-| 8 | `feat(editor): add markdown editor with live preview` | `bun run build` |
-| 10, 11, 12 | `feat(blog): add post list + detail pages + tag system` | `bun run build` |
-| 13, 14 | `feat(comments): add comment/reply system + moderation` | `bun run build` |
-| 15, 16 | `feat(notifications): add in-app notifications + user history` | `bun run build` |
-| 17 | `feat(uploads): add image upload + serve system` | `bun run build` |
-| 18 | `feat(search): add FTS5 full-text search` | `bun run build` |
-| 19, 20 | `feat(admin): add admin panel + content moderation` | `bun run build` |
-| 21 | `feat(rss): add RSS feed generation` | `bun run build` |
-| 22, 23 | `feat(ui): add auth pages + SEO meta tags` | `bun run build` |
-| 24, 25 | `test: add unit/integration tests for core features` | `bun test` |
-| 26, 27, 28 | `chore(deploy): add Docker + error states + health check` | `docker build .` |
+| After Task(s) | Commit Message                                                         | Pre-commit       |
+| ------------- | ---------------------------------------------------------------------- | ---------------- |
+| 1             | `chore(scaffold): init Next.js 16 + bun + tailwind + shadcn`           | `bun run build`  |
+| 2             | `feat(db): add Drizzle schema + SQLite migrations + FTS5`              | `bun run build`  |
+| 3             | `feat(auth): add Auth.js v5 with email+password + GitHub OAuth + RBAC` | `bun run build`  |
+| 4, 5          | `feat(ui): add theme tokens + dark mode + shared types`                | `bun run build`  |
+| 6             | `feat(ui): add app shell layout + nav + sidebar + footer`              | `bun run build`  |
+| 7, 9          | `feat(blog): add post CRUD + markdown rendering pipeline`              | `bun run build`  |
+| 8             | `feat(editor): add markdown editor with live preview`                  | `bun run build`  |
+| 10, 11, 12    | `feat(blog): add post list + detail pages + tag system`                | `bun run build`  |
+| 13, 14        | `feat(comments): add comment/reply system + moderation`                | `bun run build`  |
+| 15, 16        | `feat(notifications): add in-app notifications + user history`         | `bun run build`  |
+| 17            | `feat(uploads): add image upload + serve system`                       | `bun run build`  |
+| 18            | `feat(search): add FTS5 full-text search`                              | `bun run build`  |
+| 19, 20        | `feat(admin): add admin panel + content moderation`                    | `bun run build`  |
+| 21            | `feat(rss): add RSS feed generation`                                   | `bun run build`  |
+| 22, 23        | `feat(ui): add auth pages + SEO meta tags`                             | `bun run build`  |
+| 24, 25        | `test: add unit/integration tests for core features`                   | `bun test`       |
+| 26, 27, 28    | `chore(deploy): add Docker + error states + health check`              | `docker build .` |
 
 ---
 
 ## Success Criteria
 
 ### Verification Commands
+
 ```bash
 # Build succeeds
 bun run build  # Expected: no errors
@@ -3292,6 +3302,7 @@ curl "http://localhost:3000/api/search?q=typescript"  # Expected: JSON results
 ```
 
 ### Final Checklist
+
 - [ ] All "Must Have" present (verified by F1)
 - [ ] All "Must NOT Have" absent (verified by F1 + F4)
 - [ ] All `bun test` pass (verified by F2)

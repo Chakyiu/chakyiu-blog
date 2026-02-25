@@ -1,20 +1,20 @@
-export const runtime = 'nodejs'
+export const runtime = "nodejs";
 
-import { db } from '@/lib/db'
-import * as schema from '@/lib/db/schema'
-import { desc, eq } from 'drizzle-orm'
+import { db } from "@/lib/db";
+import * as schema from "@/lib/db/schema";
+import { desc, eq } from "drizzle-orm";
 
 function escapeXml(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function toRFC822(date: Date): string {
-  return date.toUTCString()
+  return date.toUTCString();
 }
 
 export async function GET() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://chakyiu.blog'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://chakyiu.blog";
 
     const posts = await db
       .select({
@@ -28,17 +28,19 @@ export async function GET() {
       })
       .from(schema.posts)
       .leftJoin(schema.users, eq(schema.posts.authorId, schema.users.id))
-      .where(eq(schema.posts.status, 'published'))
+      .where(eq(schema.posts.status, "published"))
       .orderBy(desc(schema.posts.publishedAt))
-      .limit(20)
+      .limit(20);
 
     const items = posts
       .map((post) => {
-        const link = `${baseUrl}/posts/${post.slug}`
-        const guid = link
-        const pubDate = post.publishedAt ? toRFC822(new Date(post.publishedAt)) : ''
-        const description = post.excerpt || post.content.slice(0, 200)
-        const author = post.authorName || 'ChaKyiu'
+        const link = `${baseUrl}/posts/${post.slug}`;
+        const guid = link;
+        const pubDate = post.publishedAt
+          ? toRFC822(new Date(post.publishedAt))
+          : "";
+        const description = post.excerpt || post.content.slice(0, 200);
+        const author = post.authorName || "Chakyiu";
 
         return `    <item>
       <title>${escapeXml(post.title)}</title>
@@ -47,17 +49,17 @@ export async function GET() {
       <pubDate>${pubDate}</pubDate>
       <description><![CDATA[${description}]]></description>
       <author>${author}</author>
-    </item>`
+    </item>`;
       })
-      .join('\n')
+      .join("\n");
 
-    const now = new Date()
-    const lastBuildDate = toRFC822(now)
+    const now = new Date();
+    const lastBuildDate = toRFC822(now);
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>ChaKyiu Blog</title>
+    <title>Chakyiu Blog</title>
     <link>${baseUrl}</link>
     <description>IT Developer Blog</description>
     <language>en-us</language>
@@ -65,30 +67,31 @@ export async function GET() {
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
 ${items}
   </channel>
-</rss>`
+</rss>`;
 
     return new Response(xml, {
       headers: {
-        'Content-Type': 'application/rss+xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+        "Content-Type": "application/rss+xml; charset=utf-8",
+        "Cache-Control":
+          "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
       },
-    })
+    });
   } catch (error) {
-    console.error('RSS feed error:', error)
+    console.error("RSS feed error:", error);
     // Return empty valid RSS in case of DB errors (e.g. dev mode)
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://chakyiu.blog'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://chakyiu.blog";
     const emptyXml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>ChaKyiu Blog</title>
+    <title>Chakyiu Blog</title>
     <link>${baseUrl}</link>
     <description>IT Developer Blog</description>
     <language>en-us</language>
     <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
   </channel>
-</rss>`
+</rss>`;
     return new Response(emptyXml, {
-      headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' },
-    })
+      headers: { "Content-Type": "application/rss+xml; charset=utf-8" },
+    });
   }
 }

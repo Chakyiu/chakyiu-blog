@@ -8,19 +8,22 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? 'https://chakyiu.blog'),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL ?? "https://chakyiu.blog",
+  ),
   title: {
-    default: 'ChaKyiu Blog',
-    template: '%s | ChaKyiu Blog',
+    default: "Chakyiu Blog",
+    template: "%s | Chakyiu Blog",
   },
-  description: 'IT developer blog covering web development, DevOps, and software engineering.',
+  description:
+    "IT developer blog covering web development, DevOps, and software engineering.",
   openGraph: {
-    type: 'website',
-    siteName: 'ChaKyiu Blog',
-    locale: 'en_US',
+    type: "website",
+    siteName: "Chakyiu Blog",
+    locale: "en_US",
   },
   twitter: {
-    card: 'summary_large_image',
+    card: "summary_large_image",
   },
   robots: {
     index: true,
@@ -28,7 +31,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className="min-h-screen bg-background font-sans antialiased">
