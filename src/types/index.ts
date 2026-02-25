@@ -142,3 +142,23 @@ export type PostFilters = {
   page?: number;
   pageSize?: number;
 };
+
+/**
+ * Project view with author info
+ * renderedReadme is pre-rendered HTML from the GitHub README
+ */
+export type ProjectView = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  githubUrl: string | null;
+  imageUrl: string | null;
+  cachedReadme: string | null;
+  renderedReadme: string | null;
+  readmeUpdatedAt: number | null;
+  author: UserView;
+  status: "draft" | "published" | "archived";
+  createdAt: number;
+  updatedAt: number;
+};

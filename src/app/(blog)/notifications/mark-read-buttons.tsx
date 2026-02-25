@@ -46,3 +46,32 @@ export function MarkAllReadButton() {
     </Button>
   )
 }
+
+export function NotificationLink({
+  id,
+  href,
+  children,
+  className,
+}: {
+  id: string
+  href: string
+  children: React.ReactNode
+  className?: string
+}) {
+  const [isPending, startTransition] = useTransition()
+
+  return (
+    <button
+      disabled={isPending}
+      className={className}
+      onClick={() => {
+        startTransition(async () => {
+          await markRead(id)
+          window.location.href = href
+        })
+      }}
+    >
+      {children}
+    </button>
+  )
+}

@@ -71,7 +71,7 @@ export function CommentList({ comments, postId }: CommentListProps) {
   return (
     <div className="space-y-6">
       {comments.map((comment) => (
-        <div key={comment.id}>
+        <div key={comment.id} id={`comment-${comment.id}`}>
           <CommentCard comment={comment} postId={postId} />
           {comment.replies && comment.replies.length > 0 && (
             <div className="border-l-2 border-muted ml-4 pl-2 mt-2 space-y-4">

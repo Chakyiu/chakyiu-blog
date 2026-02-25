@@ -231,6 +231,13 @@ export async function createReply(input: {
       createdAt: now,
     })
 
+    // Build the deep-link reference: postSlug#comment-parentId
+    const postRows = await db
+      .select({ slug: schema.posts.slug })
+      .from(schema.posts)
+      .where(eq(schema.posts.id, postId))
+    const postSlug = postRows[0]?.slug ?? ''
+
     // Create notification for parent comment's author (skip self-notification)
     if (parentComment.authorId && parentComment.authorId !== user.id) {
       await db.insert(schema.notifications).values({
@@ -238,13 +245,13 @@ export async function createReply(input: {
         userId: parentComment.authorId,
         type: 'reply',
         message: 'Someone replied to your comment',
-        referenceId: id,
+        referenceId: `${postSlug}#comment-${parentId}`,
         read: false,
         createdAt: now,
       })
     }
 
-    revalidatePath(`/posts/${(await db.select({ slug: schema.posts.slug }).from(schema.posts).where(eq(schema.posts.id, postId)))[0]?.slug ?? ''}`)
+    revalidatePath(`/posts/${postSlug}`)
 
     const newComment: CommentView = {
       id,

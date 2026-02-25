@@ -174,7 +174,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   comments: many(comments),
   notifications: many(notifications),
   images: many(images),
-}));
+  projects: many(projects),
+}))
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, { fields: [accounts.userId], references: [users.id] }),
@@ -218,4 +219,30 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 export const imagesRelations = relations(images, ({ one }) => ({
   uploader: one(users, { fields: [images.uploadedBy], references: [users.id] }),
   post: one(posts, { fields: [images.postId], references: [posts.id] }),
+}));
+
+// ── Projects ───────────────────────────────────────────────────────────────
+export const projects = sqliteTable('projects', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  slug: text('slug').unique().notNull(),
+  description: text('description'),
+  githubUrl: text('githubUrl'),
+  imageUrl: text('imageUrl'),
+  cachedReadme: text('cachedReadme'),
+  readmeUpdatedAt: integer('readmeUpdatedAt', { mode: 'timestamp_ms' }),
+  authorId: text('authorId').references(() => users.id),
+  status: text('status', { enum: ['draft', 'published', 'archived'] })
+    .default('draft')
+    .notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp_ms' }).$defaultFn(
+    () => new Date(),
+  ),
+  updatedAt: integer('updatedAt', { mode: 'timestamp_ms' }).$defaultFn(
+    () => new Date(),
+  ),
+});
+
+export const projectsRelations = relations(projects, ({ one }) => ({
+  author: one(users, { fields: [projects.authorId], references: [users.id] }),
 }));

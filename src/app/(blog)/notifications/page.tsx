@@ -1,6 +1,6 @@
 import { requireAuth } from '@/lib/auth/helpers'
 import { getNotifications } from '@/lib/actions/notifications'
-import { MarkReadButton, MarkAllReadButton } from './mark-read-buttons'
+import { MarkReadButton, MarkAllReadButton, NotificationLink } from './mark-read-buttons'
 import { Bell, MessageSquareReply, EyeOff, Trash2, UserCog } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { NotificationView } from '@/types'
@@ -78,41 +78,67 @@ export default async function NotificationsPage() {
         </div>
       ) : (
         <ul className="space-y-3">
-          {notifications.map((notification) => (
-            <li
-              key={notification.id}
-              className={`flex items-start gap-4 rounded-lg border p-4 transition-colors ${
-                notification.read
-                  ? 'bg-background border-border opacity-70'
-                  : 'bg-muted/40 border-border'
-              }`}
-            >
-              <div className="mt-0.5 shrink-0">
-                <NotificationIcon type={notification.type} />
-              </div>
+          {notifications.map((notification) => {
+            const replyHref =
+              notification.type === 'reply' &&
+              notification.referenceId?.includes('#')
+                ? `/posts/${notification.referenceId}`
+                : null
 
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    <NotificationTypeLabel type={notification.type} />
-                  </span>
-                  {!notification.read && (
-                    <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4">
-                      New
-                    </Badge>
-                  )}
+            const inner = (
+              <>
+                <div className="mt-0.5 shrink-0">
+                  <NotificationIcon type={notification.type} />
                 </div>
-                <p className="text-sm">{notification.message}</p>
-                <p className="text-xs text-muted-foreground">{formatRelativeDate(notification.createdAt)}</p>
-              </div>
 
-              {!notification.read && (
-                <div className="shrink-0">
-                  <MarkReadButton id={notification.id} />
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      <NotificationTypeLabel type={notification.type} />
+                    </span>
+                    {!notification.read && (
+                      <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4">
+                        New
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm">{notification.message}</p>
+                  <p className="text-xs text-muted-foreground">{formatRelativeDate(notification.createdAt)}</p>
                 </div>
-              )}
-            </li>
-          ))}
+
+                {!notification.read && !replyHref && (
+                  <div className="shrink-0">
+                    <MarkReadButton id={notification.id} />
+                  </div>
+                )}
+              </>
+            )
+
+            return (
+              <li
+                key={notification.id}
+                className={`rounded-lg border transition-colors ${
+                  notification.read
+                    ? 'bg-background border-border opacity-70'
+                    : 'bg-muted/40 border-border'
+                } ${replyHref ? 'hover:bg-muted/60' : ''}`}
+              >
+                {replyHref ? (
+                  <NotificationLink
+                    id={notification.id}
+                    href={replyHref}
+                    className="flex items-start gap-4 w-full p-4 text-left"
+                  >
+                    {inner}
+                  </NotificationLink>
+                ) : (
+                  <div className="flex items-start gap-4 w-full p-4">
+                    {inner}
+                  </div>
+                )}
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>

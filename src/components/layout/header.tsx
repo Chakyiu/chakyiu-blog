@@ -36,6 +36,9 @@ export async function Header() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/search">Search</Link>
           </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/projects">Projects</Link>
+          </Button>
         </nav>
 
         <div className="hidden md:flex flex-1 mx-4">

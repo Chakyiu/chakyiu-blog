@@ -53,6 +53,13 @@ export function MobileNav({ user }: { user: SessionUser | null }) {
               >
                 Search
               </Link>
+              <Link
+                href="/projects"
+                onClick={() => setOpen(false)}
+                className="text-sm font-medium py-3 border-b border-border hover:text-primary transition-colors"
+              >
+                Projects
+              </Link>
               {user ? (
                 <>
                   {user.role === "admin" && (

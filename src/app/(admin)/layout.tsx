@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/header";
 const adminNavItems = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/posts", label: "Posts" },
+  { href: "/admin/projects", label: "Projects" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/comments", label: "Comments" },
 ];
