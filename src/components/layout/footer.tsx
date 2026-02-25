@@ -10,11 +10,19 @@ export function Footer() {
           <span>© {new Date().getFullYear()} chakyiu.dev</span>
         </div>
         <div className="flex items-center gap-4 text-sm">
-          <Link href="/feed.xml" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            href="/feed.xml"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+          >
             <Rss className="h-3.5 w-3.5" />
             <span>RSS</span>
           </Link>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+          <a
+            href="https://github.com/Chakyiu"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             GitHub
           </a>
         </div>
