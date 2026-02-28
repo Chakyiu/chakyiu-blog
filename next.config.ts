@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "http", hostname: "localhost" },
       { protocol: "http", hostname: "127.0.0.1" },
+      { protocol: "https", hostname: "blog.chakyiu.dev" },
     ],
   },
   turbopack: {

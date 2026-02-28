@@ -14,7 +14,7 @@ A developer blog built with Next.js 16 and Bun. It prioritizes speed, simplicity
 - **Comments**: Built-in reply system with XSS protection.
 - **Notifications**: Real-time alerts for user interactions.
 - **Media Management**: Simple image upload system for blog posts and projects.
-- **SEO Ready**: Automated RSS 2.0 feed, Open Graph tags, and JSON-LD.
+- **SEO Ready**: Automated RSS 2.0 feed, dynamic sitemap, Open Graph tags, JSON-LD structured data, and `robots.txt`.
 - **Theme Support**: Built-in dark and light modes with consistent typography.
 
 ## Tech Stack
@@ -71,7 +71,8 @@ Visit [http://localhost:3000](http://localhost:3000) to see it live.
 | `AUTH_SECRET` | Secret key for session security. Generate one using `bunx auth secret`. | Yes |
 | `AUTH_GITHUB_ID` | GitHub OAuth client ID. | No |
 | `AUTH_GITHUB_SECRET` | GitHub OAuth client secret. | No |
-| `NEXT_PUBLIC_BASE_URL` | Your site's primary URL for RSS and SEO links. | Yes |
+| `NEXT_PUBLIC_BASE_URL` | Your site's primary URL for RSS, sitemap, and SEO links. | Yes |
+| `NEXT_PUBLIC_GSC_VERIFICATION` | Google Search Console verification token. See [SEO & Google Indexing](#seo--google-indexing). | No |
 
 ## Available Scripts
 
@@ -109,6 +110,8 @@ This command builds the container and starts the blog. Data is saved in a volume
 - `/projects/[slug]`: Detailed project view
 - `/search`: Site-wide search
 - `/feed.xml`: RSS 2.0 feed
+- `/sitemap.xml`: XML sitemap for search engines
+- `/robots.txt`: Crawler directives
 - `/api/health`: Health check endpoint
 
 ### User
@@ -125,6 +128,32 @@ This command builds the container and starts the blog. Data is saved in a volume
 - `/admin/tags`: Tag management
 - `/admin/comments`: Comment moderation
 - `/admin/users`: User management
+
+## SEO & Google Indexing
+
+The blog includes a full SEO setup out of the box:
+
+- **`robots.txt`** — served from `public/robots.txt`. Allows all public routes and blocks `/admin/`, `/api/`, `/auth/`. Points crawlers to the sitemap.
+- **`/sitemap.xml`** — dynamic route (`src/app/sitemap.ts`) that queries the DB at runtime and lists all published posts and projects. Updates automatically as you publish.
+- **Open Graph & Twitter cards** — generated per-page via Next.js metadata API.
+- **JSON-LD** — `BlogPosting` structured data injected on every post page.
+- **RSS feed** — available at `/feed.xml`.
+
+### Getting indexed by Google
+
+1. Deploy the site so `https://your-domain/sitemap.xml` and `/robots.txt` are publicly accessible.
+2. Go to [Google Search Console](https://search.google.com/search-console) and add your site as a URL-prefix property.
+3. Choose the **HTML tag** verification method and copy the token value.
+4. Add it to your environment:
+   ```
+   NEXT_PUBLIC_GSC_VERIFICATION=your-token-here
+   ```
+5. Redeploy, then click **Verify** in Search Console.
+6. Navigate to **Sitemaps** and submit `https://your-domain/sitemap.xml`.
+7. Use the **URL Inspection** tool to request indexing for your homepage and key posts.
+
+The token is intentionally kept out of source code. It is public (rendered in HTML) but should not be committed to a public repository.
+
 
 ## Contributing
 

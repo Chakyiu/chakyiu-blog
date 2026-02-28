@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL ?? "https://chakyiu.blog",
+    process.env.NEXT_PUBLIC_BASE_URL ?? "https://blog.chakyiu.dev",
   ),
   title: {
     default: "Chakyiu Blog",
@@ -29,6 +29,10 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  // To verify with Google Search Console, add NEXT_PUBLIC_GSC_VERIFICATION to your env.
+  ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION && {
+    verification: { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION },
+  }),
 };
 
 export default function RootLayout({

@@ -14,7 +14,8 @@ function toRFC822(date: Date): string {
 
 export async function GET() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://chakyiu.blog";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ?? "https://blog.chakyiu.dev";
 
     const posts = await db
       .select({
@@ -79,7 +80,8 @@ ${items}
   } catch (error) {
     console.error("RSS feed error:", error);
     // Return empty valid RSS in case of DB errors (e.g. dev mode)
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://chakyiu.blog";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ?? "https://blog.chakyiu.dev";
     const emptyXml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>

@@ -171,7 +171,7 @@
 - CDATA wrapper for descriptions to handle content safely
 - RFC 822 date format via `Date.toUTCString()`
 - Direct Drizzle ORM query with leftJoin to get author name
-- Environment variable support: `NEXT_PUBLIC_BASE_URL` with https://chakyiu.blog fallback
+- Environment variable support: `NEXT_PUBLIC_BASE_URL` with https://blog.chakyiu.dev fallback
 
 ### Key Learnings
 
@@ -201,7 +201,7 @@
 ### Implementation Details
 
 - Updated `src/app/layout.tsx` with comprehensive base metadata:
-  - `metadataBase: new URL(NEXT_PUBLIC_BASE_URL ?? 'https://chakyiu.blog')` for absolute URLs in OG tags
+  - `metadataBase: new URL(NEXT_PUBLIC_BASE_URL ?? 'https://blog.chakyiu.dev')` for absolute URLs in OG tags
   - Title template: `'%s | Chakyiu Blog'` for auto-suffix on child pages
   - OpenGraph defaults: type='website', siteName, locale='en_US'
   - Twitter card: 'summary_large_image'
