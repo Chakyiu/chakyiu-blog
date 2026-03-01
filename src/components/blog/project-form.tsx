@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { MarkdownEditor } from '@/components/blog/markdown-editor'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -38,8 +39,8 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
   const [status, setStatus] = React.useState<'draft' | 'published' | 'archived'>(
     initialData?.status ?? 'draft'
   )
-  const [readmePreview, setReadmePreview] = React.useState<string | null>(
-    initialData?.cachedReadme ?? null
+  const [cachedReadme, setCachedReadme] = React.useState(
+    initialData?.cachedReadme ?? ''
   )
 
   const handleFetchReadme = async () => {
@@ -57,10 +58,10 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
     try {
       const result = await fetchGithubReadme(url)
       if (result.success) {
-        setReadmePreview(result.data)
+        setCachedReadme(result.data)
         toast({
           title: 'README fetched',
-          description: 'README content loaded successfully. It will be saved with the project.',
+          description: 'README content loaded into editor. You can edit it before saving.',
         })
       } else {
         toast({
@@ -94,6 +95,7 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
         githubUrl: githubUrl || null,
         productUrl: productUrl || null,
         imageUrl: imageUrl || null,
+        cachedReadme: cachedReadme || null,
         status,
       }
 
@@ -197,8 +199,7 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          The README will be automatically loaded when creating or updating the project.
-          Use the button to preview it here first.
+          Optional. Use the button to fetch README from a public GitHub repo into the editor below.
         </p>
       </div>
 
@@ -219,17 +220,18 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
         </p>
       </div>
 
-      {readmePreview && (
-        <div className="space-y-2">
-          <Label>README Preview</Label>
-          <div className="rounded-md border p-4 bg-muted/30 max-h-64 overflow-y-auto">
-            <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
-              {readmePreview.slice(0, 2000)}
-              {readmePreview.length > 2000 && '\n\n… (truncated for preview)'}
-            </pre>
-          </div>
-        </div>
-      )}
+      <div className="space-y-2">
+        <Label>README Content (Optional)</Label>
+        <p className="text-xs text-muted-foreground mb-2">
+          Write or paste the project README in Markdown. You can also fetch it from GitHub using the button above.
+        </p>
+        <MarkdownEditor
+          value={cachedReadme}
+          onChange={setCachedReadme}
+          placeholder="Write the project README in Markdown..."
+          minHeight={300}
+        />
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="imageUrl">Cover Image (Optional)</Label>

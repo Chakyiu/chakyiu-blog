@@ -273,6 +273,7 @@ export type CreateProjectInput = {
   imageUrl?: string | null
   productUrl?: string | null
   status?: 'draft' | 'published' | 'archived'
+  cachedReadme?: string | null
 }
 
 export async function createProject(
@@ -285,23 +286,16 @@ export async function createProject(
     return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
-  const { title, description, githubUrl, imageUrl, status, productUrl } = parsed.data
+  const { title, description, githubUrl, imageUrl, status, productUrl, cachedReadme: inputReadme } = parsed.data
 
   try {
     const slug = await generateUniqueSlug(title)
     const id = randomUUID()
     const now = new Date()
 
-    // Fetch and cache the README if a GitHub URL is provided
-    let cachedReadme: string | null = null
-    let readmeUpdatedAt: Date | null = null
-    if (githubUrl) {
-      const readmeResult = await fetchGithubReadme(githubUrl)
-      if (readmeResult.success) {
-        cachedReadme = readmeResult.data
-        readmeUpdatedAt = now
-      }
-    }
+    // Use the README provided by admin (manual edit or fetched from GitHub)
+    const cachedReadme = inputReadme ?? null
+    const readmeUpdatedAt = cachedReadme ? now : null
 
     await db.insert(schema.projects).values({
       id,
@@ -345,6 +339,7 @@ export type UpdateProjectInput = {
   imageUrl?: string | null
   productUrl?: string | null
   status?: 'draft' | 'published' | 'archived'
+  cachedReadme?: string | null
 }
 
 export async function updateProject(
@@ -362,7 +357,7 @@ export async function updateProject(
     return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
-  const { title, description, githubUrl, imageUrl, status, productUrl } = parsed.data
+  const { title, description, githubUrl, imageUrl, status, productUrl, cachedReadme: inputReadme } = parsed.data
 
   try {
     const existing = await db
@@ -406,19 +401,10 @@ export async function updateProject(
     if (status !== undefined) updateValues.status = status
     if (productUrl !== undefined) updateValues.productUrl = productUrl
 
-    // If the GitHub URL changed, re-fetch the README
-    if (githubUrl !== undefined) {
-      updateValues.githubUrl = githubUrl
-      if (githubUrl) {
-        const readmeResult = await fetchGithubReadme(githubUrl)
-        if (readmeResult.success) {
-          updateValues.cachedReadme = readmeResult.data
-          updateValues.readmeUpdatedAt = now
-        }
-      } else {
-        updateValues.cachedReadme = null
-        updateValues.readmeUpdatedAt = null
-      }
+    if (githubUrl !== undefined) updateValues.githubUrl = githubUrl
+    if (inputReadme !== undefined) {
+      updateValues.cachedReadme = inputReadme
+      updateValues.readmeUpdatedAt = inputReadme ? now : null
     }
 
     await db

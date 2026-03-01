@@ -31,6 +31,10 @@ export const createProjectSchema = z.object({
     )
     .optional()
     .nullable(),
+  cachedReadme: z
+    .string()
+    .optional()
+    .nullable(),
   status: z
     .enum(['draft', 'published', 'archived'])
     .default('draft'),
@@ -66,6 +70,10 @@ export const updateProjectSchema = z.object({
       (val) => val.startsWith('/api/uploads/') || z.string().url().safeParse(val).success,
       'Image URL must be a valid URL or an uploaded file path'
     )
+    .optional()
+    .nullable(),
+  cachedReadme: z
+    .string()
     .optional()
     .nullable(),
   status: z
