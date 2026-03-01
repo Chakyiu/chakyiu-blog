@@ -154,6 +154,7 @@ export type ProjectView = {
   description: string | null;
   githubUrl: string | null;
   imageUrl: string | null;
+  productUrl: string | null;
   cachedReadme: string | null;
   renderedReadme: string | null;
   readmeUpdatedAt: number | null;

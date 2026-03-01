@@ -94,6 +94,7 @@ type ProjectRow = {
   description: string | null
   githubUrl: string | null
   imageUrl: string | null
+  productUrl: string | null
   cachedReadme: string | null
   readmeUpdatedAt: Date | null
   authorId: string | null
@@ -120,6 +121,7 @@ async function rowToProjectView(row: ProjectRow): Promise<ProjectView> {
     description: row.description,
     githubUrl: row.githubUrl,
     imageUrl: row.imageUrl,
+    productUrl: row.productUrl,
     cachedReadme: row.cachedReadme,
     renderedReadme,
     readmeUpdatedAt: row.readmeUpdatedAt ? row.readmeUpdatedAt.getTime() : null,
@@ -144,6 +146,7 @@ const projectSelect = {
   description: schema.projects.description,
   githubUrl: schema.projects.githubUrl,
   imageUrl: schema.projects.imageUrl,
+  productUrl: schema.projects.productUrl,
   cachedReadme: schema.projects.cachedReadme,
   readmeUpdatedAt: schema.projects.readmeUpdatedAt,
   authorId: schema.projects.authorId,
@@ -268,6 +271,7 @@ export type CreateProjectInput = {
   description?: string | null
   githubUrl?: string | null
   imageUrl?: string | null
+  productUrl?: string | null
   status?: 'draft' | 'published' | 'archived'
 }
 
@@ -281,7 +285,7 @@ export async function createProject(
     return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
-  const { title, description, githubUrl, imageUrl, status } = parsed.data
+  const { title, description, githubUrl, imageUrl, status, productUrl } = parsed.data
 
   try {
     const slug = await generateUniqueSlug(title)
@@ -306,6 +310,7 @@ export async function createProject(
       description: description ?? null,
       githubUrl: githubUrl ?? null,
       imageUrl: imageUrl ?? null,
+      productUrl: productUrl ?? null,
       cachedReadme,
       readmeUpdatedAt,
       authorId: adminUser.id,
@@ -338,6 +343,7 @@ export type UpdateProjectInput = {
   description?: string | null
   githubUrl?: string | null
   imageUrl?: string | null
+  productUrl?: string | null
   status?: 'draft' | 'published' | 'archived'
 }
 
@@ -356,7 +362,7 @@ export async function updateProject(
     return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
-  const { title, description, githubUrl, imageUrl, status } = parsed.data
+  const { title, description, githubUrl, imageUrl, status, productUrl } = parsed.data
 
   try {
     const existing = await db
@@ -398,6 +404,7 @@ export async function updateProject(
     if (description !== undefined) updateValues.description = description
     if (imageUrl !== undefined) updateValues.imageUrl = imageUrl
     if (status !== undefined) updateValues.status = status
+    if (productUrl !== undefined) updateValues.productUrl = productUrl
 
     // If the GitHub URL changed, re-fetch the README
     if (githubUrl !== undefined) {

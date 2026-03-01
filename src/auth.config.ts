@@ -6,7 +6,7 @@
  *
  * The full config (adapter + DB callbacks) lives in src/auth.ts and is used
  * exclusively by API route handlers (/api/auth/[...nextauth]) which run in
- * the Node.js runtime where bun:sqlite is available.
+ * the Node.js runtime where the database is available.
  */
 import type { NextAuthConfig } from "next-auth";
 

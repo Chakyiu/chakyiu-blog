@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test'
-import { Database } from 'bun:sqlite'
-import { drizzle } from 'drizzle-orm/bun-sqlite'
-import { migrate } from 'drizzle-orm/bun-sqlite/migrator'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import postgres from 'postgres'
 import * as schema from '../lib/db/schema'
-import { eq, sql, and } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { randomUUID } from 'crypto'
 import path from 'path'
 
-const sqlite = new Database(':memory:')
-sqlite.exec('PRAGMA foreign_keys = ON;')
-const db = drizzle(sqlite, { schema })
+const connectionString = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL ?? 'postgres://localhost:5432/blog_test'
+const client = postgres(connectionString, { prepare: false })
+const db = drizzle(client, { schema })
 
 const migrationsFolder = path.resolve(import.meta.dir, '../../drizzle')
 
@@ -17,23 +17,23 @@ beforeAll(async () => {
   await migrate(db, { migrationsFolder })
 })
 
-afterAll(() => {
-  sqlite.close()
+afterAll(async () => {
+  await client.end()
 })
 
-function makeAdminUser() {
+async function makeAdminUser() {
   const id = randomUUID()
-  db.insert(schema.users).values({
+  await db.insert(schema.users).values({
     id,
     name: 'Admin',
     email: `admin-${id}@example.com`,
     role: 'admin',
     passwordHash: 'irrelevant',
-  }).run()
+  })
   return { id, email: `admin-${id}@example.com`, role: 'admin' as const }
 }
 
-function insertPost(authorId: string, overrides: Partial<{
+async function insertPost(authorId: string, overrides: Partial<{
   title: string
   slug: string
   content: string
@@ -55,20 +55,19 @@ function insertPost(authorId: string, overrides: Partial<{
     updatedAt: now,
     publishedAt: overrides.publishedAt ?? null,
   }
-  db.insert(schema.posts).values(data).run()
+  await db.insert(schema.posts).values(data)
   return { ...data }
 }
 
 describe('getPosts (DB layer)', () => {
-  it('returns all posts from the DB', () => {
-    const admin = makeAdminUser()
-    const post1 = insertPost(admin.id, { title: 'Alpha', status: 'published', publishedAt: new Date() })
-    const post2 = insertPost(admin.id, { title: 'Beta', status: 'draft' })
+  it('returns all posts from the DB', async () => {
+    const admin = await makeAdminUser()
+    const post1 = await insertPost(admin.id, { title: 'Alpha', status: 'published', publishedAt: new Date() })
+    const post2 = await insertPost(admin.id, { title: 'Beta', status: 'draft' })
 
-    const rows = db.select({ id: schema.posts.id, title: schema.posts.title })
+    const rows = await db.select({ id: schema.posts.id, title: schema.posts.title })
       .from(schema.posts)
       .where(eq(schema.posts.authorId, admin.id))
-      .all()
 
     expect(rows.length).toBeGreaterThanOrEqual(2)
     const titles = rows.map((r) => r.title)
@@ -76,38 +75,36 @@ describe('getPosts (DB layer)', () => {
     expect(titles).toContain('Beta')
   })
 
-  it('filters by status=published', () => {
-    const admin = makeAdminUser()
-    insertPost(admin.id, { title: 'Published', status: 'published', publishedAt: new Date() })
-    insertPost(admin.id, { title: 'Hidden Draft', status: 'draft' })
+  it('filters by status=published', async () => {
+    const admin = await makeAdminUser()
+    await insertPost(admin.id, { title: 'Published', status: 'published', publishedAt: new Date() })
+    await insertPost(admin.id, { title: 'Hidden Draft', status: 'draft' })
 
-    const rows = db.select({ id: schema.posts.id, status: schema.posts.status })
+    const rows = await db.select({ id: schema.posts.id, status: schema.posts.status })
       .from(schema.posts)
       .where(and(
         eq(schema.posts.authorId, admin.id),
         eq(schema.posts.status, 'published'),
       ))
-      .all()
 
     expect(rows.every((r) => r.status === 'published')).toBe(true)
   })
 
-  it('returns empty array when no posts exist for a new user', () => {
-    const admin = makeAdminUser()
-    const rows = db.select({ id: schema.posts.id })
+  it('returns empty array when no posts exist for a new user', async () => {
+    const admin = await makeAdminUser()
+    const rows = await db.select({ id: schema.posts.id })
       .from(schema.posts)
       .where(eq(schema.posts.authorId, admin.id))
-      .all()
     expect(rows).toHaveLength(0)
   })
 })
 
 describe('createPost (DB layer)', () => {
-  it('inserts a post and returns it', () => {
-    const admin = makeAdminUser()
+  it('inserts a post and returns it', async () => {
+    const admin = await makeAdminUser()
     const id = randomUUID()
     const now = new Date()
-    db.insert(schema.posts).values({
+    await db.insert(schema.posts).values({
       id,
       title: 'New Post',
       slug: `new-post-${id}`,
@@ -118,12 +115,12 @@ describe('createPost (DB layer)', () => {
       createdAt: now,
       updatedAt: now,
       publishedAt: null,
-    }).run()
+    })
 
-    const row = db.select()
+    const [row] = await db.select()
       .from(schema.posts)
       .where(eq(schema.posts.id, id))
-      .get()
+      .limit(1)
 
     expect(row).not.toBeNull()
     expect(row!.title).toBe('New Post')
@@ -131,13 +128,13 @@ describe('createPost (DB layer)', () => {
     expect(row!.authorId).toBe(admin.id)
   })
 
-  it('rejects a post with a duplicate slug', () => {
-    const admin = makeAdminUser()
+  it('rejects a post with a duplicate slug', async () => {
+    const admin = await makeAdminUser()
     const id1 = randomUUID()
     const slug = `dup-slug-${randomUUID()}`
     const now = new Date()
 
-    db.insert(schema.posts).values({
+    await db.insert(schema.posts).values({
       id: id1,
       title: 'First',
       slug,
@@ -148,11 +145,11 @@ describe('createPost (DB layer)', () => {
       createdAt: now,
       updatedAt: now,
       publishedAt: null,
-    }).run()
+    })
 
     const id2 = randomUUID()
-    expect(() => {
-      db.insert(schema.posts).values({
+    expect(async () => {
+      await db.insert(schema.posts).values({
         id: id2,
         title: 'Second',
         slug, 
@@ -163,36 +160,35 @@ describe('createPost (DB layer)', () => {
         createdAt: now,
         updatedAt: now,
         publishedAt: null,
-      }).run()
+      })
     }).toThrow()
   })
 })
 
 describe('updatePost (DB layer)', () => {
-  it('updates the title and status of a post', () => {
-    const admin = makeAdminUser()
-    const post = insertPost(admin.id, { title: 'Original Title', status: 'draft' })
+  it('updates the title and status of a post', async () => {
+    const admin = await makeAdminUser()
+    const post = await insertPost(admin.id, { title: 'Original Title', status: 'draft' })
 
-    db.update(schema.posts)
+    await db.update(schema.posts)
       .set({ title: 'Updated Title', status: 'published', updatedAt: new Date() })
       .where(eq(schema.posts.id, post.id))
-      .run()
 
-    const row = db.select({ title: schema.posts.title, status: schema.posts.status })
+    const [row] = await db.select({ title: schema.posts.title, status: schema.posts.status })
       .from(schema.posts)
       .where(eq(schema.posts.id, post.id))
-      .get()
+      .limit(1)
 
     expect(row!.title).toBe('Updated Title')
     expect(row!.status).toBe('published')
   })
 
-  it('returns not found for a non-existent post ID', () => {
+  it('returns not found for a non-existent post ID', async () => {
     const fakeId = randomUUID()
-    const row = db.select({ id: schema.posts.id })
+    const [row] = await db.select({ id: schema.posts.id })
       .from(schema.posts)
       .where(eq(schema.posts.id, fakeId))
-      .get()
+      .limit(1)
 
     expect(row).toBeUndefined()
   })

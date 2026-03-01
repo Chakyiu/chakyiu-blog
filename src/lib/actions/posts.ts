@@ -150,7 +150,7 @@ export async function getPost(slug: string): Promise<ActionResult<PostView>> {
       .leftJoin(schema.users, eq(schema.posts.authorId, schema.users.id))
       .leftJoin(schema.comments, and(eq(schema.comments.postId, schema.posts.id), eq(schema.comments.hidden, false)))
       .where(eq(schema.posts.slug, slug))
-      .groupBy(schema.posts.id)
+      .groupBy(schema.posts.id, schema.users.id)
 
     if (rows.length === 0) {
       return { success: false, error: 'Post not found' }
@@ -263,7 +263,7 @@ export async function getPosts(
       .leftJoin(schema.users, eq(schema.posts.authorId, schema.users.id))
       .leftJoin(schema.comments, and(eq(schema.comments.postId, schema.posts.id), eq(schema.comments.hidden, false)))
       .where(whereClause)
-      .groupBy(schema.posts.id)
+      .groupBy(schema.posts.id, schema.users.id)
       .orderBy(orderClause)
       .limit(pageSize)
       .offset(offset)
@@ -565,7 +565,7 @@ export async function getPostById(postId: string): Promise<ActionResult<PostView
       .leftJoin(schema.users, eq(schema.posts.authorId, schema.users.id))
       .leftJoin(schema.comments, and(eq(schema.comments.postId, schema.posts.id), eq(schema.comments.hidden, false)))
       .where(eq(schema.posts.id, postId))
-      .groupBy(schema.posts.id)
+      .groupBy(schema.posts.id, schema.users.id)
 
     if (rows.length === 0) {
       return { success: false, error: 'Post not found' }

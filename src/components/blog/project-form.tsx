@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select'
 import { createProject, updateProject, fetchGithubReadme } from '@/lib/actions/projects'
 import type { ProjectView } from '@/types'
-import { Loader2, RefreshCw, Github, Upload, X } from 'lucide-react'
+import { Loader2, RefreshCw, Github, ExternalLink, Upload, X } from 'lucide-react'
 
 interface ProjectFormProps {
   initialData?: ProjectView
@@ -34,6 +34,7 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
   const [description, setDescription] = React.useState(initialData?.description ?? '')
   const [githubUrl, setGithubUrl] = React.useState(initialData?.githubUrl ?? '')
   const [imageUrl, setImageUrl] = React.useState(initialData?.imageUrl ?? '')
+  const [productUrl, setProductUrl] = React.useState(initialData?.productUrl ?? '')
   const [status, setStatus] = React.useState<'draft' | 'published' | 'archived'>(
     initialData?.status ?? 'draft'
   )
@@ -91,6 +92,7 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
         title,
         description: description || null,
         githubUrl: githubUrl || null,
+        productUrl: productUrl || null,
         imageUrl: imageUrl || null,
         status,
       }
@@ -197,6 +199,23 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
         <p className="text-xs text-muted-foreground">
           The README will be automatically loaded when creating or updating the project.
           Use the button to preview it here first.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="productUrl">Product URL (Optional)</Label>
+        <div className="relative">
+          <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="productUrl"
+            value={productUrl}
+            onChange={(e) => setProductUrl(e.target.value)}
+            placeholder="https://your-product.com"
+            className="pl-9"
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Link to the live product, demo, or landing page.
         </p>
       </div>
 

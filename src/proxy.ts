@@ -3,7 +3,7 @@ import { authConfig } from "./auth.config";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Use the edge-safe config (no DB, no bun:sqlite) for middleware JWT verification.
+// Use the edge-safe config (no DB) for middleware JWT verification.
 const { auth } = NextAuth(authConfig);
 
 interface RateLimitEntry {
@@ -93,6 +93,6 @@ export default auth((req: NextRequest & { auth: unknown }) => {
 
 export const config = {
   // Exclude /api/auth/* so auth callbacks are handled by the nodejs-runtime
-  // API route (/api/auth/[...nextauth]/route.ts) where bun:sqlite works natively.
+  // API route (/api/auth/[...nextauth]/route.ts) where the database is available.
   matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
 };

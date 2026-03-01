@@ -29,4 +29,3 @@ export const MIN_PASSWORD_LENGTH = 8;
 
 // Paths
 export const UPLOADS_DIR = process.env.UPLOADS_DIR ?? "./data/uploads";
-export const DB_PATH = process.env.DATABASE_URL ?? "./data/sqlite.db";

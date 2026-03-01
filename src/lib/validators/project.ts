@@ -18,6 +18,11 @@ export const createProjectSchema = z.object({
     .regex(/^https:\/\/github\.com\//, 'Must be a GitHub URL (https://github.com/...)')
     .optional()
     .nullable(),
+  productUrl: z
+    .string()
+    .url('Product URL must be a valid URL')
+    .optional()
+    .nullable(),
   imageUrl: z
     .string()
     .refine(
@@ -48,6 +53,11 @@ export const updateProjectSchema = z.object({
     .string()
     .url('GitHub URL must be a valid URL')
     .regex(/^https:\/\/github\.com\//, 'Must be a GitHub URL (https://github.com/...)')
+    .optional()
+    .nullable(),
+  productUrl: z
+    .string()
+    .url('Product URL must be a valid URL')
     .optional()
     .nullable(),
   imageUrl: z

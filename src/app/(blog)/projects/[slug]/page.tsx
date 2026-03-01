@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { getProject } from '@/lib/actions/projects'
 import { MarkdownContent } from '@/components/markdown-content'
 import { Button } from '@/components/ui/button'
-import { Github, CalendarIcon, RefreshCw } from 'lucide-react'
+import { Github, CalendarIcon, RefreshCw, ExternalLink } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 export const revalidate = 60
@@ -100,6 +100,15 @@ export default async function ProjectPage({ params }: PageProps) {
             <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
               <Github className="h-4 w-4 mr-2" />
               View on GitHub
+            </a>
+          </Button>
+        )}
+
+        {project.productUrl && (
+          <Button asChild className="shrink-0">
+            <a href={project.productUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Visit Product
             </a>
           </Button>
         )}

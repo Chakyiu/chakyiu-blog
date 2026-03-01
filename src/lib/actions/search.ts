@@ -13,7 +13,7 @@ type FtsRow = {
   title: string
   slug: string
   excerpt: string | null
-  publishedAt: number | null
+  publishedAt: Date | null
   authorId: string | null
   snippet: string
   score: number
@@ -23,20 +23,33 @@ export async function searchPosts(query: string): Promise<ActionResult<SearchRes
   if (!query.trim()) return { success: true, data: [] }
 
   try {
-    const rows = (await db.all(sql`
+    const tsQuery = query
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, ''))
+      .filter(Boolean)
+      .join(' & ')
+
+    if (!tsQuery) return { success: true, data: [] }
+
+    const rows = (await db.execute(sql`
       SELECT
         posts.id,
         posts.title,
         posts.slug,
         posts.excerpt,
-        posts.publishedAt,
-        posts.authorId,
-        snippet(posts_fts, 1, '<mark>', '</mark>', '...', 20) as snippet,
-        bm25(posts_fts) as score
-      FROM posts_fts
-      JOIN posts ON posts.rowid = posts_fts.rowid
-      WHERE posts_fts MATCH ${query} AND posts.status = 'published'
-      ORDER BY bm25(posts_fts)
+        posts."publishedAt",
+        posts."authorId",
+        ts_headline('english', posts.content, to_tsquery('english', ${tsQuery}),
+          'StartSel=<mark>, StopSel=</mark>, MaxWords=35, MinWords=15') as snippet,
+        ts_rank_cd(to_tsvector('english', posts.title || ' ' || posts.content),
+          to_tsquery('english', ${tsQuery})) as score
+      FROM posts
+      WHERE
+        to_tsvector('english', posts.title || ' ' || posts.content) @@ to_tsquery('english', ${tsQuery})
+        AND posts.status = 'published'
+      ORDER BY score DESC
       LIMIT ${SEARCH_RESULTS_PER_PAGE}
     `)) as FtsRow[]
 
@@ -93,7 +106,7 @@ export async function searchPosts(query: string): Promise<ActionResult<SearchRes
         excerpt: row.excerpt,
         snippet: row.snippet,
         relevanceScore: row.score,
-        publishedAt: row.publishedAt,
+        publishedAt: row.publishedAt ? row.publishedAt.getTime() : null,
         author,
         tags: tagsMap.get(row.id) ?? [],
       }

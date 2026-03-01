@@ -45,9 +45,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   events: {
     async createUser({ user }) {
       // Auto-promote the first user in the system to admin (covers OAuth sign-up)
-      const count = db.select({ count: sql<number>`count(*)` }).from(users).get();
+      const [count] = await db.select({ count: sql<number>`count(*)` }).from(users);
       if ((count?.count ?? 0) === 1) {
-        db.update(users).set({ role: 'admin' }).where(eq(users.id, user.id!)).run();
+        await db.update(users).set({ role: 'admin' }).where(eq(users.id, user.id!));
       }
     },
   },

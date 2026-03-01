@@ -52,6 +52,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
             </a>
           </Button>
         )}
+        {project.productUrl && (
+          <Button variant="ghost" size="sm" asChild>
+            <a href={project.productUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-1" />
+              Visit
+            </a>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   )

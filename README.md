@@ -8,7 +8,7 @@ A developer blog built with Next.js 16 and Bun. It prioritizes speed, simplicity
 - **Markdown Support**: Write posts in Markdown with Shiki syntax highlighting.
 - **Cover Images**: Upload or link cover images for posts and projects.
 - **Project Showcase**: Dedicated section for projects with GitHub README auto-import.
-- **Instant Search**: Full-text search powered by SQLite FTS5.
+- **Instant Search**: Full-text search powered by PostgreSQL tsvector.
 - **Complete Auth**: Email, password, and GitHub OAuth support via Auth.js v5.
 - **Admin Dashboard**: Secure management of posts, projects, tags, comments, and users.
 - **Comments**: Built-in reply system with XSS protection.
@@ -22,7 +22,7 @@ A developer blog built with Next.js 16 and Bun. It prioritizes speed, simplicity
 - **Framework**: Next.js 16
 - **Runtime**: Bun
 - **Styling**: Tailwind CSS v4 and shadcn/ui
-- **Database**: SQLite with Drizzle ORM
+- **Database**: PostgreSQL with Drizzle ORM
 - **Authentication**: Auth.js v5
 - **Icons**: Lucide React
 
@@ -30,6 +30,7 @@ A developer blog built with Next.js 16 and Bun. It prioritizes speed, simplicity
 
 - [Bun](https://bun.sh) v1.1 or higher
 - Node.js v20 or higher
+- [PostgreSQL](https://www.postgresql.org/) 15 or higher
 
 ## Local Setup
 
@@ -67,7 +68,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see it live.
 
 | Name | Description | Required |
 |------|-------------|----------|
-| `DATABASE_URL` | Path to your SQLite database file. Default is `.data/blog.db`. | No |
+| `DATABASE_URL` | PostgreSQL connection string. Example: `postgres://postgres:postgres@localhost:5432/blog`. | Yes |
 | `AUTH_SECRET` | Secret key for session security. Generate one using `bunx auth secret`. | Yes |
 | `AUTH_GITHUB_ID` | GitHub OAuth client ID. | No |
 | `AUTH_GITHUB_SECRET` | GitHub OAuth client secret. | No |
@@ -90,7 +91,7 @@ Run the entire stack using Docker Compose.
 docker-compose up --build
 ```
 
-This command builds the container and starts the blog. Data is saved in a volume called `blog_data`.
+This command builds the container and starts the blog with a PostgreSQL database. Data is persisted in a volume called `pg_data`.
 
 ## Project Structure
 
@@ -98,7 +99,6 @@ This command builds the container and starts the blog. Data is saved in a volume
 - `src/components`: UI components and building blocks.
 - `src/lib`: Database schemas, auth config, and helpers.
 - `src/hooks`: Custom React hooks.
-- `data`: Storage for the SQLite database file.
 - `public`: Static files and images.
 
 ## Routes

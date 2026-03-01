@@ -1,32 +1,34 @@
 import {
-  sqliteTable,
+  pgTable,
   text,
   integer,
+  boolean,
+  timestamp,
   primaryKey,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // ── Users ──────────────────────────────────────────────────────────────────
-export const users = sqliteTable("users", {
+export const users = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name"),
   email: text("email").unique().notNull(),
-  emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
+  emailVerified: timestamp("emailVerified", { mode: "date", withTimezone: true }),
   image: text("image"),
   passwordHash: text("passwordHash"),
   role: text("role", { enum: ["admin", "user"] })
     .default("user")
     .notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).$defaultFn(
+  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).$defaultFn(
+  updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
 });
 
 // ── Auth.js Accounts ───────────────────────────────────────────────────────
-export const accounts = sqliteTable(
+export const accounts = pgTable(
   "accounts",
   {
     userId: text("userId")
@@ -51,22 +53,22 @@ export const accounts = sqliteTable(
 );
 
 // ── Auth.js Sessions ───────────────────────────────────────────────────────
-export const sessions = sqliteTable("sessions", {
+export const sessions = pgTable("sessions", {
   id: text("id").notNull(),
   sessionToken: text("sessionToken").notNull().primaryKey(),
   userId: text("userId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  expires: integer("expires", { mode: "timestamp" }).notNull(),
+  expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
 });
 
 // ── Auth.js Verification Tokens ────────────────────────────────────────────
-export const verificationTokens = sqliteTable(
+export const verificationTokens = pgTable(
   "verificationTokens",
   {
     identifier: text("identifier").notNull(),
     token: text("token").notNull(),
-    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
+    expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.identifier, table.token] }),
@@ -74,7 +76,7 @@ export const verificationTokens = sqliteTable(
 );
 
 // ── Posts ──────────────────────────────────────────────────────────────────
-export const posts = sqliteTable("posts", {
+export const posts = pgTable("posts", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
   slug: text("slug").unique().notNull(),
@@ -86,17 +88,17 @@ export const posts = sqliteTable("posts", {
   status: text("status", { enum: ["draft", "published", "archived"] })
     .default("draft")
     .notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).$defaultFn(
+  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).$defaultFn(
+  updatedAt: timestamp("updatedAt", { mode: "date", withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
-  publishedAt: integer("publishedAt", { mode: "timestamp_ms" }),
+  publishedAt: timestamp("publishedAt", { mode: "date", withTimezone: true }),
 });
 
 // ── Tags ───────────────────────────────────────────────────────────────────
-export const tags = sqliteTable("tags", {
+export const tags = pgTable("tags", {
   id: text("id").primaryKey(),
   name: text("name").unique().notNull(),
   slug: text("slug").unique().notNull(),
@@ -104,7 +106,7 @@ export const tags = sqliteTable("tags", {
 });
 
 // ── Post Tags (junction) ───────────────────────────────────────────────────
-export const postTags = sqliteTable(
+export const postTags = pgTable(
   "postTags",
   {
     postId: text("postId")
@@ -120,7 +122,7 @@ export const postTags = sqliteTable(
 );
 
 // ── Comments ───────────────────────────────────────────────────────────────
-export const comments = sqliteTable("comments", {
+export const comments = pgTable("comments", {
   id: text("id").primaryKey(),
   content: text("content").notNull(),
   renderedContent: text("renderedContent").notNull(),
@@ -129,14 +131,14 @@ export const comments = sqliteTable("comments", {
     .references(() => posts.id, { onDelete: "cascade" }),
   authorId: text("authorId").references(() => users.id),
   parentId: text("parentId"),
-  hidden: integer("hidden", { mode: "boolean" }).default(false).notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).$defaultFn(
+  hidden: boolean("hidden").default(false).notNull(),
+  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
 });
 
 // ── Notifications ──────────────────────────────────────────────────────────
-export const notifications = sqliteTable("notifications", {
+export const notifications = pgTable("notifications", {
   id: text("id").primaryKey(),
   userId: text("userId")
     .notNull()
@@ -146,14 +148,14 @@ export const notifications = sqliteTable("notifications", {
   }).notNull(),
   message: text("message").notNull(),
   referenceId: text("referenceId"),
-  read: integer("read", { mode: "boolean" }).default(false).notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).$defaultFn(
+  read: boolean("read").default(false).notNull(),
+  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
 });
 
 // ── Images ─────────────────────────────────────────────────────────────────
-export const images = sqliteTable("images", {
+export const images = pgTable("images", {
   id: text("id").primaryKey(),
   filename: text("filename").notNull(),
   originalName: text("originalName").notNull(),
@@ -161,7 +163,7 @@ export const images = sqliteTable("images", {
   size: integer("size").notNull(),
   uploadedBy: text("uploadedBy").references(() => users.id),
   postId: text("postId").references(() => posts.id),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).$defaultFn(
+  createdAt: timestamp("createdAt", { mode: "date", withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
 });
@@ -222,23 +224,24 @@ export const imagesRelations = relations(images, ({ one }) => ({
 }));
 
 // ── Projects ───────────────────────────────────────────────────────────────
-export const projects = sqliteTable('projects', {
+export const projects = pgTable('projects', {
   id: text('id').primaryKey(),
   title: text('title').notNull(),
   slug: text('slug').unique().notNull(),
   description: text('description'),
   githubUrl: text('githubUrl'),
   imageUrl: text('imageUrl'),
+  productUrl: text('productUrl'),
   cachedReadme: text('cachedReadme'),
-  readmeUpdatedAt: integer('readmeUpdatedAt', { mode: 'timestamp_ms' }),
+  readmeUpdatedAt: timestamp('readmeUpdatedAt', { mode: 'date', withTimezone: true }),
   authorId: text('authorId').references(() => users.id),
   status: text('status', { enum: ['draft', 'published', 'archived'] })
     .default('draft')
     .notNull(),
-  createdAt: integer('createdAt', { mode: 'timestamp_ms' }).$defaultFn(
+  createdAt: timestamp('createdAt', { mode: 'date', withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
-  updatedAt: integer('updatedAt', { mode: 'timestamp_ms' }).$defaultFn(
+  updatedAt: timestamp('updatedAt', { mode: 'date', withTimezone: true }).$defaultFn(
     () => new Date(),
   ),
 });

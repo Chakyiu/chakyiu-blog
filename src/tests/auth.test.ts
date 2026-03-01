@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test'
-import { Database } from 'bun:sqlite'
-import { drizzle } from 'drizzle-orm/bun-sqlite'
-import { migrate } from 'drizzle-orm/bun-sqlite/migrator'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import postgres from 'postgres'
 import * as schema from '../lib/db/schema'
 import { eq, sql } from 'drizzle-orm'
 import { randomUUID } from 'crypto'
 import path from 'path'
 
-const sqlite = new Database(':memory:')
-sqlite.exec('PRAGMA foreign_keys = ON;')
-const db = drizzle(sqlite, { schema })
+const connectionString = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL ?? 'postgres://localhost:5432/blog_test'
+const client = postgres(connectionString, { prepare: false })
+const db = drizzle(client, { schema })
 
 const migrationsFolder = path.resolve(import.meta.dir, '../../drizzle')
 
@@ -17,8 +17,8 @@ beforeAll(async () => {
   await migrate(db, { migrationsFolder })
 })
 
-afterAll(() => {
-  sqlite.close()
+afterAll(async () => {
+  await client.end()
 })
 
 function validatePassword(password: string): string | null {
@@ -46,18 +46,14 @@ async function registerUser(
   const passwordHash = await Bun.password.hash(password)
   const id = randomUUID()
 
-  const result = sqlite.transaction(() => {
-    const existing = db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.email, email)).get()
-    if (existing) return { success: false as const, error: 'Email already registered' }
+  const [existing] = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.email, email))
+  if (existing) return { success: false, error: 'Email already registered' }
 
-    const count = db.select({ count: sql<number>`count(*)` }).from(schema.users).get()
-    const role: 'admin' | 'user' = (count?.count ?? 0) === 0 ? 'admin' : 'user'
+  const [count] = await db.select({ count: sql<number>`count(*)` }).from(schema.users)
+  const role: 'admin' | 'user' = (count?.count ?? 0) === 0 ? 'admin' : 'user'
 
-    db.insert(schema.users).values({ id, name, email, passwordHash, role }).run()
-    return { success: true as const, data: { id, role } }
-  })()
-
-  return result as { success: true; data: { id: string; role: string } } | { success: false; error: string }
+  await db.insert(schema.users).values({ id, name, email, passwordHash, role })
+  return { success: true, data: { id, role } }
 }
 
 describe('registerUser', () => {

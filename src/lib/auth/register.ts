@@ -29,14 +29,14 @@ export async function registerUser(
   const passwordHash = await Bun.password.hash(password)
   const id = crypto.randomUUID()
 
-  const result = db.transaction((tx) => {
-    const existing = tx.select({ id: users.id }).from(users).where(eq(users.email, email)).get()
+  const result = await db.transaction(async (tx) => {
+    const [existing] = await tx.select({ id: users.id }).from(users).where(eq(users.email, email));
     if (existing) return { success: false as const, error: 'Email already registered' }
 
-    const count = tx.select({ count: sql<number>`count(*)` }).from(users).get()
+    const [count] = await tx.select({ count: sql<number>`count(*)` }).from(users);
     const role: 'admin' | 'user' = (count?.count ?? 0) === 0 ? 'admin' : 'user'
 
-    tx.insert(users).values({ id, name, email, passwordHash, role }).run()
+    await tx.insert(users).values({ id, name, email, passwordHash, role });
     return { success: true as const, data: { id, role } }
   })
 
